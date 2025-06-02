@@ -15,8 +15,8 @@ import {
 export class DefaultHodrRouter implements HodrRouter {
   type = 'Router';
   routes: HodrRoute[];
-  finalizePayload = (params: HodrRouterFinalizationParams) => params.payload;
-  formatError = (params: HodrRouterErrorFormatterParams) => params.error;
+  _finalizePayload = (params: HodrRouterFinalizationParams) => params.payload;
+  _formatError = (params: HodrRouterErrorFormatterParams) => params.error;
 
   constructor(
     readonly root: () => Hodr,
@@ -29,17 +29,13 @@ export class DefaultHodrRouter implements HodrRouter {
     return this.routes;
   }
 
-  withFinalizePayload(
-    finalizeFn: (params: HodrRouterFinalizationParams) => any
-  ): HodrRouter {
-    this.finalizePayload = finalizeFn;
+  finalizePayload(finalizeFn: (params: HodrRouterFinalizationParams) => any): HodrRouter {
+    this._finalizePayload = finalizeFn;
     return this;
   }
 
-  withErrorFormatter(
-    formatterFn: (params: HodrRouterErrorFormatterParams) => any
-  ): HodrRouter {
-    this.formatError = formatterFn;
+  formatError(formatterFn: (params: HodrRouterErrorFormatterParams) => any): HodrRouter {
+    this._formatError = formatterFn;
     return this;
   }
 
@@ -66,8 +62,8 @@ export class DefaultHodrRouter implements HodrRouter {
       method,
       path,
       unitOfWork,
-      this.finalizePayload,
-      this.formatError
+      this._finalizePayload,
+      this._formatError
     );
     this.routes.push(route);
     return new UnitOfWorkBuilder<HttpRequest>(unitOfWork);

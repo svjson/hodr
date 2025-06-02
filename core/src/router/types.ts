@@ -8,13 +8,9 @@ import { Hodr } from '../types';
 export interface HodrRouter extends Origin {
   routes: HodrRoute[];
 
-  withFinalizePayload(
-    finalizeFn: (params: HodrRouterFinalizationParams) => any
-  ): HodrRouter;
+  finalizePayload(finalizeFn: (params: HodrRouterFinalizationParams) => any): HodrRouter;
 
-  withErrorFormatter(
-    formatterFn: (params: HodrRouterErrorFormatterParams) => any
-  ): HodrRouter;
+  formatError(formatterFn: (params: HodrRouterErrorFormatterParams) => any): HodrRouter;
 
   get(path: string): UnitOfWorkBuilder<HttpRequest>;
 
