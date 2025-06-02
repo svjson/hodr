@@ -1,0 +1,41 @@
+{
+  "name": "@hodr/web-inspector-plugin",
+  "version": "0.1.0",
+  "author": "Sven Johansson",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run build:plugin && npm run build:web-app",
+    "build:plugin": "tsup",
+    "build:web-app": "node web-app/esbuild.config.mjs",
+    "watch:web-app": "WATCH=1 node web-app/esbuild.config.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "json-formatter-js": "^2.5.23",
+    "nano-jsx": "^0.0.30",
+    "pretty-json-custom-element": "^1.1.19"
+  },
+  "peerDependencies": {
+    "@hodr/core": ""
+  },
+  "devDependencies": {
+    "@hodr/core": "",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "chokidar": "^4.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.4.0"
+  }
+}

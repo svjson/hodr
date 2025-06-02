@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+    "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "lib": ["ES2020", "dom"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist/**/*"],
+  "references": [
+    { "path": "../../core" }
+  ]
+}

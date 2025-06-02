@@ -1,0 +1,24 @@
+{
+  "name": "hodr-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "author": "Sven Johansson",
+  "description": "A framework for building and routing modular service interactions with verified, transformable contracts between steps.",
+  "workspaces": [
+    "core",
+    "plugins/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run -ws typecheck",
+    "build": "npm run build:core && npm run build:koa-plugin && npm run build:axios-plugin && npm run build:web-inspector-plugin",
+    "build:core": "npm --workspace core run build",
+    "build:koa-plugin": "npm --workspace @hodr/koa-plugin run build",
+    "build:axios-plugin": "npm --workspace @hodr/axios-plugin run build",
+    "build:web-inspector-plugin": "npm --workspace @hodr/web-inspector-plugin run build",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.0"
+  }
+}
