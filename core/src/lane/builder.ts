@@ -9,9 +9,10 @@ import { ObjectPathReference } from '../engine/types';
 import { httpStatusMatcher, HttpStatusPattern } from '../engine/validate';
 import { Hodr } from '../types';
 import { HodrDestination } from './destination';
-import { CallStep, ParallelStep, SequenceStep, TransformStep } from './step';
-import {
+import { CallStep, ExtractStep, ParallelStep, SequenceStep, TransformStep } from './step';
+import type {
   DestinationBuilder,
+  ExtractionMap,
   HodrStep,
   HttpClientDestinationBuilderStub,
   Lane,
@@ -23,6 +24,12 @@ import {
  */
 export class LaneBuilder<Payload = any> {
   constructor(public lane: Lane) {}
+
+  /** Register an extract step */
+  extract<T>(directive: ExtractionMap | string): LaneBuilder<T> {
+    this.lane.steps.push(new ExtractStep(directive));
+    return new LaneBuilder<T>(this.lane);
+  }
 
   /** Register a transform step */
   transform<T>(fn: (ctx: ExecutionContext<Payload>) => Promise<T>): LaneBuilder<T> {

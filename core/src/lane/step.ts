@@ -1,6 +1,7 @@
 import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
-import { HodrStep } from './types';
+import { extractMap } from '../engine';
+import { ExtractionMap, HodrStep } from './types';
 
 // Step for calling a named downstream service
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -19,6 +20,31 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
     const result = await service.invoke(ctx, this.path);
 
     return result;
+  }
+}
+
+/**
+ * Transform the payload by extracting specific fields using a directive map or string.
+ *
+ * Usage:
+ *
+ * Using a directive map:
+ * .extract({
+ *   threadId: 'params',
+ *   account: 'session.account',
+ *   comment: 'body',
+ * })
+ *
+ * Using a string:
+ * .extract('session.account')
+ */
+export class ExtractStep<I, T> implements HodrStep<I, T> {
+  name = 'extract';
+
+  constructor(readonly directive: ExtractionMap | string) {}
+
+  async execute(ctx: ExecutionContext<I>): Promise<T> {
+    return extractMap(ctx.payload, this.directive);
   }
 }
 

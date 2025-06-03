@@ -11,8 +11,8 @@
     "build": "tsup",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "exports": {

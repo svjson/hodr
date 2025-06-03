@@ -44,3 +44,10 @@ export interface DestinationBuilder {
 export interface HttpClientDestinationBuilderStub {
   using(client: HttpClientProvider): void;
 }
+
+/**
+ * Directive for extract operations.
+ */
+export interface ExtractionMap {
+  [key: string]: string | ExtractionMap;
+}

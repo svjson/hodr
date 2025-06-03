@@ -1,9 +1,13 @@
 export { makeHodr } from './hodr';
 export * from './types';
 
-export { Origin, Input } from './lane';
+export { Input, Origin } from './lane';
+
 export { ExecutionContext } from './context';
-export type { HttpClient, HttpResponse, HttpRequest } from './destination';
+
+export type { HttpClient, HttpRequest, HttpResponse } from './destination';
+
+export { extractMap, extractPath } from './engine';
 export type {
   FinalizeStepExecution,
   HttpClientConfig,
@@ -13,5 +17,6 @@ export type {
   StepExecution,
   StepMetadata,
 } from './engine';
+
 export { HodrError, memoryRecorder } from './engine';
 export type { HodrRoute, HodrRouter } from './router';

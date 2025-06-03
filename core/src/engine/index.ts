@@ -6,7 +6,8 @@
  * and snippets that does... things, alright?
  */
 export { memoryRecorder } from './recorder';
-export {
+export { extractMap, extractPath } from './transform';
+export type {
   DestinationAdapter,
   FinalizeStepExecution,
   HodrError,
