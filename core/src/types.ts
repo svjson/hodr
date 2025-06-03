@@ -20,23 +20,6 @@ export interface Hodr {
 
   service(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
-  use(plugin: HodrPlugin): void;
 
   useRecorder(recorder: Recorder): Hodr;
-}
-
-/*
- * Plugin interfaces (ON HOLD)
- *
- * The idea was that a Plugin would describe the extensions they provide
- * and let Hodr.use() apply them to the correct mount points but we might
- * end up with a more modular approach on the basic language level, so
- * might not even be needed.
- */
-export interface HodrPlugin {
-  extensions: HodrPluginExtension[];
-}
-
-export interface HodrPluginExtension {
-  type: 'service';
 }
