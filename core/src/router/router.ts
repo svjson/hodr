@@ -1,7 +1,7 @@
-import { RouterUnitOfWorkBuilder } from '../lane/builder';
+import { RouterLaneBuilder } from '../lane/builder';
 import { Input } from '../lane/types';
-import { HodrRoute } from './route';
 import { Hodr } from '../types';
+import { HodrRoute } from './route';
 import {
   HodrRouter,
   HodrRouterErrorFormatterParams,
@@ -38,34 +38,34 @@ export class DefaultHodrRouter implements HodrRouter {
     return this;
   }
 
-  get(path: string): RouterUnitOfWorkBuilder {
+  get(path: string): RouterLaneBuilder {
     return this._addRoute('GET', path);
   }
 
-  post(path: string): RouterUnitOfWorkBuilder {
+  post(path: string): RouterLaneBuilder {
     return this._addRoute('POST', path);
   }
 
-  put(path: string): RouterUnitOfWorkBuilder {
+  put(path: string): RouterLaneBuilder {
     return this._addRoute('PUT', path);
   }
 
-  delete(path: string): RouterUnitOfWorkBuilder {
+  delete(path: string): RouterLaneBuilder {
     return this._addRoute('DELETE', path);
   }
 
-  private _addRoute(method: string, path: string): RouterUnitOfWorkBuilder {
-    const unitOfWork = { root: this.root, steps: [] };
+  private _addRoute(method: string, path: string): RouterLaneBuilder {
+    const lane = { root: this.root, steps: [] };
     const route = new HodrRoute(
       this.root,
       this.name,
       method,
       path,
-      unitOfWork,
+      lane,
       this._finalizePayload,
       this._formatError
     );
     this.routes.push(route);
-    return new RouterUnitOfWorkBuilder(unitOfWork);
+    return new RouterLaneBuilder(lane);
   }
 }

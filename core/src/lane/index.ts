@@ -10,6 +10,6 @@ export type {
   DestinationBuilder,
   HodrStep,
   Input,
+  Lane,
   Origin,
-  UnitOfWork,
 } from './types';

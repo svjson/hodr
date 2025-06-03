@@ -5,7 +5,7 @@ import {
   StepStatus,
 } from '../engine';
 import { MetaJournalEntry } from '../engine/types';
-import { UnitOfWork } from '../lane';
+import { Lane } from '../lane';
 
 export interface OriginId {
   name: string;
@@ -19,7 +19,7 @@ interface ContextFields {
   origin: OriginId;
 
   /** The execution plan and its runtime state. */
-  unit: UnitOfWork;
+  lane: Lane;
   initialStep: InitialStepExecution;
   currentStep: StepExecution;
   finalizeStep?: FinalizeStepExecution;

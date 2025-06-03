@@ -1,11 +1,11 @@
 import type {
-  InitialStepExecution,
   FinalizeStepExecution,
+  InitialStepExecution,
   MetaJournalEntry,
   StepExecution,
   StepStatus,
 } from '../engine';
-import type { UnitOfWork } from '../lane';
+import type { Lane } from '../lane';
 import type {
   ContextStatus,
   ExecutionContext,
@@ -18,7 +18,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
 
   state: ContextStatus = 'running';
 
-  unit!: UnitOfWork;
+  lane: Lane;
   steps: StepExecution[] = [];
   initialStep!: InitialStepExecution;
   currentStep!: StepExecution;
@@ -33,7 +33,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
 
   constructor(params: ExecutionContextParams) {
     this.origin = params.origin;
-    this.unit = params.unit;
+    this.lane = params.lane;
     this.initialStep = params.initialStep;
     this.currentStep = params.currentStep;
     this.finalizeStep = params.finalizeStep;

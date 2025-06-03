@@ -32,7 +32,7 @@ const buildExecutionModel = (ctx: any) => {
   const model = {
     steps: [
       buildStepModel(ctx.initialStep),
-      ...juxt<any, any>(ctx.unit.steps, ctx.steps).map(([plan, step]) => {
+      ...juxt<any, any>(ctx.lane.steps, ctx.steps).map(([plan, step]) => {
         return buildStepModel(step ?? plan);
       }),
       buildStepModel(ctx.finalizeStep),
@@ -72,7 +72,7 @@ export const Execution = (props: { ctx: any }) => {
           <div class="entry">
             <span class="hm-8">
               <span class="muted">Steps completed: </span>
-              {ctx.steps.length} / {ctx.unit.steps.length}
+              {ctx.steps.length} / {ctx.lane.steps.length}
             </span>
             <span class={success ? 'success hm-8' : 'error hm-8'}>{ctx.outputTopic}</span>
             <span>{STATUS_ICONS[ctx.state]}</span>

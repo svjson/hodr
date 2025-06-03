@@ -14,7 +14,7 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
   }
 
   async execute(ctx: ExecutionContext<HttpRequest>): Promise<HttpResponse> {
-    const service = ctx.unit.root().services[this.service];
+    const service = ctx.lane.root().services[this.service];
 
     const result = await service.invoke(ctx, this.path);
 

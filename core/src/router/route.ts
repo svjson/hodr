@@ -1,14 +1,14 @@
-import { Hodr } from '../types';
 import { ExecutionContext } from '../context';
+import { HodrContext } from '../context/context';
 import { HttpRequest } from '../destination';
+import { InitialStepExecution, StepExecution } from '../engine';
+import { Lane } from '../lane';
+import { Hodr } from '../types';
 import {
   HodrRoute as HodrRouteInterface,
   HodrRouterErrorFormatterParams,
   HodrRouterFinalizationParams,
 } from './types';
-import { HodrContext } from '../context/context';
-import { InitialStepExecution, StepExecution } from '../engine';
-import { UnitOfWork } from '../lane';
 
 /**
  * Describes the lane/unit-of-work associated with an HTTP route, as well as
@@ -23,7 +23,7 @@ export class HodrRoute implements HodrRouteInterface {
     readonly router: string,
     readonly method: string,
     readonly path: string,
-    public unitOfWork: UnitOfWork,
+    public lane: Lane,
     public finalizePayload: (params: HodrRouterFinalizationParams) => any,
     public formatError: (params: HodrRouterErrorFormatterParams) => any
   ) {
@@ -45,7 +45,7 @@ export class HodrRoute implements HodrRouteInterface {
         input: this.path,
         variant: this.method,
       },
-      unit: this.unitOfWork,
+      lane: this.lane,
       metadata: metadata ?? {},
       initialStep: initialStep,
       currentStep: initialStep,
@@ -62,7 +62,7 @@ export class HodrRoute implements HodrRouteInterface {
    * Yes. Yes, it does.
    */
   async handle(ctx: HodrContext<HttpRequest>): Promise<void> {
-    for (const step of this.unitOfWork.steps) {
+    for (const step of this.lane.steps) {
       const execStep: StepExecution = {
         name: step.name,
         input: ctx.payload,

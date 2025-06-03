@@ -2,7 +2,7 @@ import { ExecutionContext } from '../context';
 import { HttpClientConfig, HttpClientProvider, InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
 
-export interface UnitOfWork {
+export interface Lane {
   root: () => Hodr;
   steps: HodrStep<any, any>[];
 }

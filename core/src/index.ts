@@ -11,6 +11,7 @@ export type {
   InitialStepExecution,
   MetaJournalEntry,
   StepExecution,
+  StepMetadata,
 } from './engine';
 export { HodrError, memoryRecorder } from './engine';
 export type { HodrRoute, HodrRouter } from './router';

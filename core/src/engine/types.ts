@@ -7,7 +7,7 @@ import { HttpClient } from '../destination';
 export type StepStatus = 'pending' | 'finalized' | 'error';
 
 /**
- * Describes the progress of the execution of a single step of a unit of work.
+ * Describes the progress of the execution of a single step of a Lane.
  * Contains the step name, its state, input and output data, metadata, and timestamps
  * and is built up by the execution engine as the step is executed.
  */
