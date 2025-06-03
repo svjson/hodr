@@ -185,7 +185,7 @@ Expressing the same execution path in Hodr could look like this:
       authorName: account.name,
       ...comment,
     }))
-    .sendTo('core-service', '/api/:targetType/thread/:targetId', {
+    .httpPost('core-service', '/api/:targetType/thread/:targetId', {
       method: 'POST',
       parameters: 'threadId',
       body: 'comment',
@@ -204,7 +204,7 @@ The key part to understanding how the steps relate to eachother is that they wil
 | `validate()`       | *field*, *validator*                | Adds a validation step to the lane, in this case, using a **Zod** schema.                                                                                                                                                                                   |
 | `extract()`        | *pattern*                           | A kind of transformation step where we name the fields of the current value(the incoming HTTPRequest) to collect into a new structure                                                                                                                       |
 | `transform()`      | *field*, *function*                 | A transformation step that will store its result to the `comment` field of the current payload, and leave everything else intact. The actual transformation is a function taking the entire current payload as an argument.                                 |
-| `sendTo()`         | *destination*, *target*, *manifest* | Send the current payload to a destination identified by `core-service`, using the `POST` http method, parameterizing the uri using                                                                                                                          |
+| `httpGet()`        | *destination*, *target*, *manifest* | Send the current payload to a destination identified by `core-service`, using the `POST` http method, parameterizing the uri using                                                                                                                          |
 | `select()`         | *path*                              | Logically equivalent to .extract('body.content').                                                                                                                                                                                                           |
 
 A few things might stand out, glaringly so even:
@@ -230,7 +230,7 @@ semantics or actual insanity, we'll simply override and/or remap them.
 ```ts
 _ // ...
   
-  .sendTo('core-service', '/api/:targetType/thread/:targetId', {
+  .httpGet('core-service', '/api/:targetType/thread/:targetId', {
     method: 'GET',
     parameters: 'threadId'
   })
@@ -253,7 +253,7 @@ This would look something like this:
 ```ts
 _ // ...
 
-  .sendTo('core-service', '/api/:targetType/thread/:targetId', {
+  .httpGet('core-service', '/api/:targetType/thread/:targetId', {
     method: 'GET',
     parameters: 'threadId'
   })
@@ -298,7 +298,7 @@ this one guy - just like in real life - that just won't acknowldge that he's in 
 ```ts
 _ // ...
    
-  .sendTo('core-service', '/api/users/:userId/avatar', {
+  .httpPost('core-service', '/api/users/:userId/avatar', {
     method: 'POST',
     parameters: 'threadId',
     body: 'comment',
@@ -361,6 +361,8 @@ wiring them up. Hodr doesn't offer a replacement router - it offers a router-sha
 abstraction that installs its runtime routes in your HTTP framework configuration.
 
 ```ts
+  import { mount } from '@hodr/koa-plugin'
+
   // -----> Your regular setup
   
   const app = new Koa()
@@ -378,7 +380,7 @@ abstraction that installs its runtime routes in your HTTP framework configuratio
   leasingRoutes(myHodrRouter) 
   
   // Apply the routes to the KoaRouter.
-  myHodrRoutes.mountTo(koaRouter) 
+  mount(koaRouter, myHodrRouter) 
 ```
 
 This lets you manage middleware, body parsing, headers, sessions, and error handling your way. 

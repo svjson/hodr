@@ -42,3 +42,4 @@ TAGS
 *.log
 *.bak
 *.orig
+.aider*

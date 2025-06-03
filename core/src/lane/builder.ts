@@ -7,6 +7,7 @@ import { extractPath } from '../engine/transform';
 import { ObjectPathReference } from '../engine/types';
 import { httpStatusMatcher, HttpStatusPattern } from '../engine/validate';
 import { Hodr } from '../types';
+import { HttpRequest } from '../destination/types';
 import { HodrDestination } from './destination';
 import { CallStep, ParallelStep, SequenceStep, TransformStep } from './step';
 import {
@@ -23,47 +24,55 @@ import {
 export class UnitOfWorkBuilder<Payload = any> {
   constructor(public unitOfWork: UnitOfWork) {}
 
-  /* Run a transformation step before anything else */
+  /** Register a transform step */
   transform<T>(fn: (ctx: ExecutionContext<Payload>) => Promise<T>): UnitOfWorkBuilder<T> {
     this.unitOfWork.steps.push(new TransformStep<Payload, T>(fn));
     return new UnitOfWorkBuilder<T>(this.unitOfWork);
   }
 
-  /*  Call an external service */
-  call(service: string, path: string): UnitOfWorkBuilder<HttpResponse> {
-    this.unitOfWork.steps.push(new CallStep(service, path));
-    return new UnitOfWorkBuilder<HttpResponse>(this.unitOfWork);
-  }
-
-  // Run a sequence of steps inline
+  /** Register a sequencial step */
   sequence(steps: HodrStep[]): this {
     this.unitOfWork.steps.push(new SequenceStep(steps));
     return this;
   }
 
-  // Run a group of steps in parallel
+  /** Register a parallel execution step */
   parallel(steps: HodrStep[]): this {
     this.unitOfWork.steps.push(new ParallelStep(steps));
     return this;
   }
 
-  expectHttpOk(this: UnitOfWorkBuilder<HttpResponse>): UnitOfWorkBuilder<HttpResponse> {
+  /** Register a destination invocation step */
+  invokeDestination(destination: string, path: string): UnitOfWorkBuilder<any> {
+    this.unitOfWork.steps.push(new CallStep(destination, path));
+    return this;
+  }
+}
+
+export class RouterUnitOfWorkBuilder extends UnitOfWorkBuilder<HttpRequest> {
+  httpGet(service: string, path: string): HttpResponseUnitOfWorkBuilder {
+    this.unitOfWork.steps.push(new CallStep(service, path));
+    return new HttpResponseUnitOfWorkBuilder(this.unitOfWork);
+  }
+
+  httpPost(service: string, path: string): HttpResponseUnitOfWorkBuilder {
+    this.unitOfWork.steps.push(new CallStep(service, path));
+    return new HttpResponseUnitOfWorkBuilder(this.unitOfWork);
+  }
+}
+
+export class HttpResponseUnitOfWorkBuilder extends UnitOfWorkBuilder<HttpResponse> {
+  expectHttpOk(): HttpResponseUnitOfWorkBuilder {
     this.unitOfWork.steps.push(httpStatusMatcher(200));
     return this;
   }
 
-  expectHttpStatus(
-    this: UnitOfWorkBuilder<HttpResponse>,
-    ...statusPattern: HttpStatusPattern[]
-  ): UnitOfWorkBuilder<HttpResponse> {
+  expectHttpStatus(...statusPattern: HttpStatusPattern[]): HttpResponseUnitOfWorkBuilder {
     this.unitOfWork.steps.push(httpStatusMatcher(...statusPattern));
     return this;
   }
 
-  extractResponseBody<T = any>(
-    this: UnitOfWorkBuilder<HttpResponse>,
-    path?: ObjectPathReference
-  ) {
+  extractResponseBody<T = any>(path?: ObjectPathReference) {
     this.unitOfWork.steps.push({
       name: 'extract-http-body',
       execute: (ctx: ExecutionContext<HttpResponse>) => {

@@ -9,7 +9,7 @@ export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
   api
     .get('/__inspector/static/:path*')
     .transform(async (ctx) => ctx.payload.params?.path)
-    .call('__inspector/static', ':path');
+    .invokeDestination('__inspector/static', ':path');
 
   api.get('/__inspector/api/origins').transform(async (_) => {
     return Object.values(hodr.origins)

@@ -1,5 +1,4 @@
-import { HttpRequest } from '../destination';
-import { UnitOfWorkBuilder } from '../lane/builder';
+import { RouterUnitOfWorkBuilder } from '../lane/builder';
 import { Input } from '../lane/types';
 import { HodrRoute } from './route';
 import { Hodr } from '../types';
@@ -39,23 +38,23 @@ export class DefaultHodrRouter implements HodrRouter {
     return this;
   }
 
-  get(path: string): UnitOfWorkBuilder<HttpRequest> {
+  get(path: string): RouterUnitOfWorkBuilder {
     return this._addRoute('GET', path);
   }
 
-  post(path: string): UnitOfWorkBuilder<HttpRequest> {
+  post(path: string): RouterUnitOfWorkBuilder {
     return this._addRoute('POST', path);
   }
 
-  put(path: string): UnitOfWorkBuilder<HttpRequest> {
+  put(path: string): RouterUnitOfWorkBuilder {
     return this._addRoute('PUT', path);
   }
 
-  delete(path: string): UnitOfWorkBuilder<HttpRequest> {
+  delete(path: string): RouterUnitOfWorkBuilder {
     return this._addRoute('DELETE', path);
   }
 
-  private _addRoute(method: string, path: string) {
+  private _addRoute(method: string, path: string): RouterUnitOfWorkBuilder {
     const unitOfWork = { root: this.root, steps: [] };
     const route = new HodrRoute(
       this.root,
@@ -67,6 +66,6 @@ export class DefaultHodrRouter implements HodrRouter {
       this._formatError
     );
     this.routes.push(route);
-    return new UnitOfWorkBuilder<HttpRequest>(unitOfWork);
+    return new RouterUnitOfWorkBuilder(unitOfWork);
   }
 }

@@ -2,7 +2,7 @@ import { ExecutionContext } from '../context';
 import { HttpRequest } from '../destination';
 import { HodrError } from '../engine';
 import { Origin, UnitOfWork, Input } from '../lane';
-import { UnitOfWorkBuilder } from '../lane/builder';
+import { RouterUnitOfWorkBuilder, UnitOfWorkBuilder } from '../lane/builder';
 import { Hodr } from '../types';
 
 export interface HodrRouter extends Origin {
@@ -12,13 +12,13 @@ export interface HodrRouter extends Origin {
 
   formatError(formatterFn: (params: HodrRouterErrorFormatterParams) => any): HodrRouter;
 
-  get(path: string): UnitOfWorkBuilder<HttpRequest>;
+  get(path: string): RouterUnitOfWorkBuilder;
 
-  post(path: string): UnitOfWorkBuilder<HttpRequest>;
+  post(path: string): RouterUnitOfWorkBuilder;
 
-  put(path: string): UnitOfWorkBuilder<HttpRequest>;
+  put(path: string): RouterUnitOfWorkBuilder;
 
-  delete(path: string): UnitOfWorkBuilder<HttpRequest>;
+  delete(path: string): RouterUnitOfWorkBuilder;
 }
 
 export interface HodrRoute extends Input<HttpRequest> {
