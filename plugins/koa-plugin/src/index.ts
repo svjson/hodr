@@ -27,112 +27,161 @@ export const mount = (koaRouter: KoaRouter, hodrRouter: HodrRouter | HodrRouter[
       (handler as (path: string, ...middleware: Middleware[]) => KoaRouter).call(
         koaRouter,
         route.path,
-        toMiddleware(router, route)
+        toMiddleware(route)
       );
     });
   });
 };
 
 /**
+ * Finalizes an HTTP request by processing the payload result based on route and configuration
+ * or serving up static content.
+ *
+ * @param {HodrRoute} route - The invoked route, containing configuration for finalizing
+ *                            the request.
+ * @param {KoaContext} koaContext - The "raw" Koa context for this request.
+ * @param {ExecutionContext<any>} exCtx - The execution context containing the payload and metadata.
+ */
+const finalizeRequest = async (
+  route: HodrRoute,
+  koaContext: KoaContext,
+  exCtx: ExecutionContext<any>
+) => {
+  const finalizeStep = exCtx.beginFinalizationStep('koa-plugin-finalize', 'pending', exCtx.payload);
+
+  if (exCtx.metadata?.payloadTypeHint === 'static-content') {
+    await send(koaContext, exCtx.payload as unknown as string, {
+      root: '/',
+    });
+  } else {
+    koaContext.status = 200;
+    koaContext.body = route.finalizePayload({ ctx: exCtx, payload: exCtx.payload });
+  }
+
+  exCtx.state = 'finalized';
+  exCtx.outputTopic = String(koaContext.status);
+  finalizeStep.output = koaContext.body;
+  finalizeStep.finishedAt = Date.now();
+  finalizeStep.state = 'finalized';
+  finalizeStep.metadata.output.description = 'Response Body';
+};
+
+/**
+ * Encodes a request failure into the HTTP response using specified route, context,
+ * and execution context rules.
+ *
+ * @param {HodrRoute} route - The route configuration that provides the error formatting
+ *                            method.
+ * @param {KoaContext} koaContext - The Koa context for the request, which to encode
+ *                                  the response into.
+ * @param {ExecutionContext<any>} exCtx - The execution context containing the state and
+ *                                        output topic for error handling.
+ * @param {any} err - The Error object or message to be encoded into the response.
+ */
+const encodeErrorResponse = (
+  route: HodrRoute,
+  koaContext: KoaContext,
+  exCtx: ExecutionContext<any>,
+  err: any
+) => {
+  console.error(err);
+  koaContext.status = 500;
+
+  exCtx.state = 'error';
+  exCtx.outputTopic = String(koaContext.status);
+
+  const finalizeStep =
+    exCtx.finalizeStep ?? exCtx.beginFinalizationStep('koa-plugin-finalize', 'error');
+  finalizeStep.state = 'error';
+
+  koaContext.body = route.formatError({
+    ctx: exCtx,
+    error:
+      err instanceof HodrError
+        ? err
+        : err instanceof Error
+          ? new HodrError(err.message, {}, err.name)
+          : typeof err === 'string'
+            ? new HodrError(err)
+            : new HodrError(String(err), {}, 'unknown-error'),
+  });
+
+  finalizeStep.output = koaContext.body;
+
+  exCtx.finalizeStep?.metadata.journal.push({
+    id: 'response-status',
+    title: 'Response Status Code',
+    entry: koaContext.status,
+  });
+};
+/**
  * Converts a HodrRoute to a Koa Middleware function that initializes an ExecutionContext
  * and executes the route's handler.
  */
-function toMiddleware(router: HodrRouter, route: HodrRoute): Middleware {
+const toMiddleware = (route: HodrRoute): Middleware => {
   return async (koaCtx: KoaContext) => {
-    const request: HttpRequest = {
-      method: route.method,
-      uri: route.path,
-      headers: koaCtx.headers,
-      params: koaCtx.params,
-      body: koaCtx.request.body,
-    };
+    const request = buildRequest(koaCtx, route);
+    const initialStep = buildInitialStep(koaCtx, request);
 
-    const initialStep: InitialStepExecution = {
-      type: 'initial',
-      name: 'koa-plugin-init',
-      metadata: {
-        input: {
-          description: 'Koa Context',
-        },
-        output: {
-          description: 'Hodr HTTP Request',
-        },
-        journal: [
-          {
-            id: 'koa-request-params',
-            title: 'Request Parameters',
-            entry: koaCtx.params,
-          },
-        ],
-      },
-      input: koaCtx,
-      output: request,
-      startedAt: Date.now(),
-      finishedAt: Date.now(),
-      state: 'pending',
-    };
-
-    const hodrCtx: ExecutionContext<HttpRequest> = route.newExecution(request, initialStep, {
+    const exCtx: ExecutionContext<HttpRequest> = route.newExecution(request, initialStep, {
       koaCtx: koaCtx,
     });
-    hodrCtx.inputTopic = koaCtx.request.url;
+    exCtx.inputTopic = koaCtx.request.url;
 
-    route.record(hodrCtx);
+    route.record(exCtx);
+    exCtx.initialStep.state = 'finalized';
 
     try {
-      hodrCtx.initialStep.state = 'finalized';
-      await route.handle(hodrCtx);
-
-      const finalizeStep = hodrCtx.beginFinalizationStep(
-        'koa-plugin-finalize',
-        'pending',
-        hodrCtx.payload
-      );
-
-      if (hodrCtx.metadata?.payloadTypeHint === 'static-content') {
-        await send(koaCtx, hodrCtx.payload as unknown as string, {
-          root: '/',
-        });
-      } else {
-        koaCtx.status = 200;
-        koaCtx.body = route.finalizePayload({ ctx: hodrCtx, payload: hodrCtx.payload });
-      }
-
-      hodrCtx.state = 'finalized';
-      hodrCtx.outputTopic = String(koaCtx.status);
-      finalizeStep.output = koaCtx.body;
-      finalizeStep.finishedAt = Date.now();
-      finalizeStep.state = 'finalized';
-      finalizeStep.metadata.output.description = 'Response Body';
+      await route.handle(exCtx);
+      await finalizeRequest(route, koaCtx, exCtx);
     } catch (err) {
-      console.log(err);
-      koaCtx.status = 500;
-      hodrCtx.state = 'error';
-      hodrCtx.outputTopic = String(koaCtx.status);
-
-      const finalizeStep =
-        hodrCtx.finalizeStep ?? hodrCtx.beginFinalizationStep('koa-plugin-finalize', 'error');
-      finalizeStep.state = 'error';
-
-      koaCtx.body = route.formatError({
-        ctx: hodrCtx,
-        error:
-          err instanceof HodrError
-            ? err
-            : err instanceof Error
-              ? new HodrError(err.message, {}, err.name)
-              : typeof err === 'string'
-                ? new HodrError(err)
-                : new HodrError(String(err), {}, 'unknown-error'),
-      });
-
-      finalizeStep.output = koaCtx.body;
+      encodeErrorResponse(route, koaCtx, exCtx, err);
     }
-
-    hodrCtx.finalizeStep?.metadata.journal.push({
-      id: 'response-status',
-      title: 'Response Status Code',
-      entry: koaCtx.status,
-    });
   };
-}
+};
+
+/**
+ * Translate the KoaContext of a request to a Hodr HttpRequest.
+ */
+const buildRequest = (koaContext: KoaContext, route: HodrRoute): HttpRequest => {
+  return {
+    method: route.method,
+    uri: route.path,
+    headers: koaContext.headers,
+    params: koaContext.params,
+    body: koaContext.request.body,
+  };
+};
+
+/**
+ * Build the initialization step for the route/lane execution.
+ *
+ * In the context of a Koa-route, this doesn't do much an exists mostly for tracking
+ * purposes.
+ */
+const buildInitialStep = (koaContext: KoaContext, request: HttpRequest): InitialStepExecution => {
+  return {
+    type: 'initial',
+    name: 'koa-plugin-init',
+    metadata: {
+      input: {
+        description: 'Koa Context',
+      },
+      output: {
+        description: 'Hodr HTTP Request',
+      },
+      journal: [
+        {
+          id: 'koa-request-params',
+          title: 'Request Parameters',
+          entry: koaContext.params,
+        },
+      ],
+    },
+    input: koaContext,
+    output: request,
+    startedAt: Date.now(),
+    finishedAt: Date.now(),
+    state: 'pending',
+  };
+};
