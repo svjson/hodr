@@ -1,4 +1,5 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
+import { HttpClientDestinationAdapter } from '../engine/types';
 import { Hodr } from '../types';
 import { HttpClient, HttpRequest } from './types';
 
@@ -15,14 +16,14 @@ import { compile } from 'path-to-regexp';
  * to deal with this - or just roll our own. How hard could it be? It couldn't possibly
  * reach left-pad levels of sheer complexity?
  */
-export class HttpClientDestinationAdapter implements HttpClientServiceAdapterInterface {
+export class DefaultHttpClientDestinationAdapter implements HttpClientDestinationAdapter {
   constructor(
     private root: () => Hodr,
     private httpClient: HttpClient
   ) {}
 
-  async invoke(ctx: HodrContext, path: string): Promise<any> {
-    const request = ctx.payload as HttpRequest;
+  async invoke(ctx: ExecutionContext<HttpRequest>, path: string): Promise<any> {
+    const request = ctx.payload;
 
     return await this.httpClient.request(ctx, {
       method: request.method,

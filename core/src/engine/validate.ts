@@ -1,4 +1,4 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { HttpResponse } from '../destination';
 import { HodrStep } from '../lane';
 import { HodrError } from './types';
@@ -31,7 +31,7 @@ export const httpStatusMatcher = (
 ): HodrStep<HttpResponse, HttpResponse> => {
   return {
     name: 'validate-http-status',
-    execute: (ctx: HodrContext<HttpResponse>): Promise<HttpResponse> => {
+    execute: (ctx: ExecutionContext<HttpResponse>): Promise<HttpResponse> => {
       const statusCode = ctx.payload.statusCode;
 
       for (const pattern of statusPatterns) {

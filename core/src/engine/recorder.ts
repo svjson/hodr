@@ -1,4 +1,4 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { Recorder } from './types';
 
 export type MemoryRecorderConfig = { name?: string; limit?: number };
@@ -12,18 +12,18 @@ export type MemoryRecorderConfig = { name?: string; limit?: number };
 class MemoryRecorder implements Recorder {
   name: string;
   limit: number;
-  contexts: HodrContext<any>[] = [];
+  contexts: ExecutionContext<any>[] = [];
 
   constructor(config: MemoryRecorderConfig) {
     this.name = config.name ?? 'memory-recorder';
     this.limit = config.limit || 100;
   }
 
-  getRecorded(): HodrContext<any>[] {
+  getRecorded(): ExecutionContext<any>[] {
     return this.contexts;
   }
 
-  record(ctx: HodrContext<any>): void {
+  record(ctx: ExecutionContext<any>): void {
     this.contexts.push(ctx);
   }
 }

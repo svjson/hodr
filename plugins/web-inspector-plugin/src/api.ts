@@ -1,9 +1,8 @@
-import type { Hodr, HodrRouter, Input, Origin } from '@hodr/core';
+import type { Hodr, HodrRouter } from '@hodr/core';
 import path from 'path';
 
 export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
   hodr.service('__inspector/static').fileSystem(path.resolve(__dirname, 'static'));
-  // const api = hodr.service('__inspector/api');
 
   const api = hodr.router('__inspector');
 

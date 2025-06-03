@@ -7,12 +7,14 @@
  */
 export {
   DestinationAdapter,
+  FinalizeStepExecution,
   HodrError,
   HttpClientConfig,
   HttpClientProvider,
+  InitialStepExecution,
+  MetaJournalEntry,
   Recorder,
   StepExecution,
-  InitialStepExecution,
-  FinalizeStepExecution,
+  StepStatus,
 } from './types';
 export { memoryRecorder } from './recorder';

@@ -1,5 +1,10 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { HttpClient } from '../destination';
+
+/**
+ * The valid states that an ExecutionStep can have.
+ */
+export type StepStatus = 'pending' | 'finalized' | 'error';
 
 /**
  * Describes the progress of the execution of a single step of a unit of work.
@@ -8,7 +13,7 @@ import { HttpClient } from '../destination';
  */
 export interface StepExecution {
   name: string;
-  state: 'pending' | 'finalized' | 'error';
+  state: StepStatus;
   input: unknown;
   output?: unknown;
   metadata: StepMetadata;
@@ -79,7 +84,7 @@ export class HodrError extends Error {
 export type ObjectPathReference = string | string[];
 
 export interface DestinationAdapter {
-  invoke(ctx: HodrContext, path: string): Promise<any>;
+  invoke(ctx: ExecutionContext<unknown>, path: string): Promise<any>;
 }
 
 /**
@@ -95,7 +100,7 @@ export interface HttpClientConfig {
  */
 export type HttpClientProvider = (httpClientConfig: HttpClientConfig) => HttpClient;
 
-export interface HttpClientServiceAdapter extends DestinationAdapter {}
+export interface HttpClientDestinationAdapter extends DestinationAdapter {}
 
 /**
  * Interface for recording execution contexts.
@@ -107,7 +112,7 @@ export interface HttpClientServiceAdapter extends DestinationAdapter {}
 export interface Recorder {
   name: string;
 
-  record(ctx: HodrContext<any>): void;
+  record(ctx: ExecutionContext<any>): void;
 
-  getRecorded(): HodrContext<any>[];
+  getRecorded(): ExecutionContext<any>[];
 }

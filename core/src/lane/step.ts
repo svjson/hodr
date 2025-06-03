@@ -1,4 +1,4 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
 import { HodrStep } from './types';
 
@@ -13,7 +13,7 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
     this.name = `http-req-${service}`;
   }
 
-  async execute(ctx: HodrContext<HttpRequest>): Promise<HttpResponse> {
+  async execute(ctx: ExecutionContext<HttpRequest>): Promise<HttpResponse> {
     const service = ctx.unit.root().services[this.service];
 
     const result = await service.invoke(ctx, this.path);
@@ -26,9 +26,9 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
 export class TransformStep<I, T> implements HodrStep<I, T> {
   name = 'transform';
 
-  constructor(private fn: (ctx: HodrContext<I>) => Promise<T>) {}
+  constructor(private fn: (ctx: ExecutionContext<I>) => Promise<T>) {}
 
-  async execute(ctx: HodrContext<I>): Promise<T> {
+  async execute(ctx: ExecutionContext<I>): Promise<T> {
     return await this.fn(ctx);
   }
 }
@@ -42,7 +42,9 @@ export class ParallelStep<I, S extends readonly HodrStep<I, any>[]>
 
   constructor(private steps: S) {}
 
-  async execute(ctx: HodrContext<I>): Promise<{ [K in keyof S]: ExtractOutput<S[K]> }> {
+  async execute(
+    ctx: ExecutionContext<I>
+  ): Promise<{ [K in keyof S]: ExtractOutput<S[K]> }> {
     const results = await Promise.all(this.steps.map((step) => step.execute(ctx)));
     return results as { [K in keyof S]: ExtractOutput<S[K]> };
   }
@@ -54,7 +56,7 @@ export class SequenceStep<I, T> implements HodrStep {
 
   constructor(private steps: HodrStep[]) {}
 
-  async execute(ctx: HodrContext): Promise<void> {
+  async execute(ctx: ExecutionContext<T>): Promise<void> {
     for (const step of this.steps) {
       await step.execute(ctx);
     }

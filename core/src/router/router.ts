@@ -25,7 +25,7 @@ export class DefaultHodrRouter implements HodrRouter {
     this.routes = [];
   }
 
-  inputs(): Input[] {
+  inputs(): Input<unknown>[] {
     return this.routes;
   }
 
@@ -59,6 +59,7 @@ export class DefaultHodrRouter implements HodrRouter {
     const unitOfWork = { root: this.root, steps: [] };
     const route = new HodrRoute(
       this.root,
+      this.name,
       method,
       path,
       unitOfWork,

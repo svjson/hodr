@@ -1,12 +1,11 @@
 import { Context as KoaContext, Middleware } from 'koa';
 import send from 'koa-send';
 import type {
+  ExecutionContext,
   HodrRoute,
   HodrRouter,
-  HodrContext,
   HttpRequest,
   InitialStepExecution,
-  FinalizeStepExecution,
 } from '@hodr/core';
 import { HodrError } from '@hodr/core';
 import KoaRouter from '@koa/router';
@@ -34,25 +33,8 @@ export const mount = (koaRouter: KoaRouter, hodrRouter: HodrRouter | HodrRouter[
   });
 };
 
-const beginFinalize = (
-  ctx: HodrContext<any>,
-  input?: any,
-  state: 'pending' | 'finalized' | 'error' = 'pending'
-): FinalizeStepExecution => {
-  ctx.finalizeStep = {
-    type: 'finalize',
-    name: 'koa-plugin-finalize',
-    input: input,
-    metadata: { input: {}, journal: [], output: {} },
-    state: state,
-    startedAt: Date.now(),
-  };
-
-  return ctx.finalizeStep;
-};
-
 /**
- * Converts a HodrRoute to a Koa Middleware function that initializes a HodrContext
+ * Converts a HodrRoute to a Koa Middleware function that initializes an ExecutionContext
  * and executes the route's handler.
  */
 function toMiddleware(router: HodrRouter, route: HodrRoute): Middleware {
@@ -90,26 +72,10 @@ function toMiddleware(router: HodrRouter, route: HodrRoute): Middleware {
       state: 'pending',
     };
 
-    /**
-     * TODO: Should this even be here? Perhaps initalization of the context and
-     * execution of a UnitOfWork should just be framework code that's executed the
-     * same way, regardless of entry point? I mean, that is/was the whole point, right?
-     */
-    const hodrCtx: HodrContext<HttpRequest> = {
-      origin: {
-        name: router.name,
-        input: route.path,
-        variant: route.method,
-      },
-      unit: route.unitOfWork,
-      steps: [],
-      metadata: { koaCtx: koaCtx },
-      initialStep: initialStep,
-      currentStep: initialStep,
-      payload: request,
-      inputTopic: koaCtx.request.url,
-      state: 'running',
-    };
+    const hodrCtx: ExecutionContext<HttpRequest> = route.newExecution(request, initialStep, {
+      koaCtx: koaCtx,
+    });
+    hodrCtx.inputTopic = koaCtx.request.url;
 
     route.record(hodrCtx);
 
@@ -117,7 +83,11 @@ function toMiddleware(router: HodrRouter, route: HodrRoute): Middleware {
       hodrCtx.initialStep.state = 'finalized';
       await route.handle(hodrCtx);
 
-      const finalizeStep = beginFinalize(hodrCtx, hodrCtx.payload);
+      const finalizeStep = hodrCtx.beginFinalizationStep(
+        'koa-plugin-finalize',
+        'pending',
+        hodrCtx.payload
+      );
 
       if (hodrCtx.metadata?.payloadTypeHint === 'static-content') {
         await send(koaCtx, hodrCtx.payload as unknown as string, {
@@ -135,11 +105,13 @@ function toMiddleware(router: HodrRouter, route: HodrRoute): Middleware {
       finalizeStep.state = 'finalized';
       finalizeStep.metadata.output.description = 'Response Body';
     } catch (err) {
+      console.log(err);
       koaCtx.status = 500;
       hodrCtx.state = 'error';
       hodrCtx.outputTopic = String(koaCtx.status);
 
-      const finalizeStep = hodrCtx.finalizeStep ?? beginFinalize(hodrCtx);
+      const finalizeStep =
+        hodrCtx.finalizeStep ?? hodrCtx.beginFinalizationStep('koa-plugin-finalize', 'error');
       finalizeStep.state = 'error';
 
       koaCtx.body = route.formatError({

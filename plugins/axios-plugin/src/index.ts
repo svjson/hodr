@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosStatic } from 'axios';
 import {
-  type HodrContext,
+  type ExecutionContext,
   type HttpClient,
   type HttpClientConfig,
   type HttpResponse,
@@ -18,7 +18,7 @@ class AxiosHttpClient implements HttpClient {
     private httpClientConfig: HttpClientConfig
   ) {}
 
-  async request(ctx: HodrContext<any>, request: Record<string, any>): Promise<HttpResponse> {
+  async request(ctx: ExecutionContext<any>, request: Record<string, any>): Promise<HttpResponse> {
     try {
       const req = {
         method: request.method,
@@ -26,7 +26,7 @@ class AxiosHttpClient implements HttpClient {
         data: ['POST', 'PUT'].includes(request.method) ? request.body : undefined,
       };
 
-      ctx.currentStep.metadata.journal.push({
+      ctx.addJournalEntry({
         id: 'axios-request-args',
         title: 'Axios Request Arguments',
         description: 'As passed to axios.request()',
@@ -42,7 +42,7 @@ class AxiosHttpClient implements HttpClient {
       ctx.currentStep.metadata.output.description = 'Hodr HTTP Response';
 
       if (response.request) {
-        ctx.currentStep.metadata.journal.push({
+        ctx.addJournalEntry({
           id: 'http-request-head',
           title: 'HTTP Request Head',
           description: 'Axios-generated Request Head',

@@ -1,4 +1,4 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { HttpRequest } from '../destination';
 import { HodrError } from '../engine';
 import { Origin, UnitOfWork, Input } from '../lane';
@@ -21,7 +21,7 @@ export interface HodrRouter extends Origin {
   delete(path: string): UnitOfWorkBuilder<HttpRequest>;
 }
 
-export interface HodrRoute extends Input {
+export interface HodrRoute extends Input<HttpRequest> {
   root(): Hodr;
   readonly method: string;
   readonly path: string;
@@ -29,16 +29,16 @@ export interface HodrRoute extends Input {
   finalizePayload: (params: HodrRouterFinalizationParams) => any;
   formatError: (params: HodrRouterErrorFormatterParams) => any;
 
-  handle(ctx: HodrContext<HttpRequest>): Promise<void>;
-  record(ctx: HodrContext<any>): void;
+  handle(ctx: ExecutionContext<HttpRequest>): Promise<void>;
+  record(ctx: ExecutionContext<any>): void;
 }
 
 export interface HodrRouterFinalizationParams {
-  ctx: HodrContext<any>;
+  ctx: ExecutionContext<any>;
   payload: any;
 }
 
 export interface HodrRouterErrorFormatterParams {
-  ctx: HodrContext<any>;
+  ctx: ExecutionContext<any>;
   error: HodrError;
 }

@@ -2,13 +2,14 @@ export { makeHodr } from './hodr';
 export * from './types';
 
 export { Origin, Input } from './lane';
-export { HodrContext } from './context';
+export { ExecutionContext } from './context';
 export type { HttpClient, HttpResponse, HttpRequest } from './destination';
 export type {
+  FinalizeStepExecution,
   HttpClientConfig,
   HttpClientProvider,
   InitialStepExecution,
-  FinalizeStepExecution,
+  MetaJournalEntry,
   StepExecution,
 } from './engine';
 export { HodrError, memoryRecorder } from './engine';

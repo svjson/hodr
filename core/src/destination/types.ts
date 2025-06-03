@@ -1,15 +1,18 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 
 /**
  * A, for now, simplistic interface to be implemented by plugins for any actual
  * HTTP clients.
  */
 export interface HttpClient {
-  request(ctx: HodrContext<any>, request: Record<string, any>): Promise<HttpResponse>;
+  request(
+    ctx: ExecutionContext<any>,
+    request: Record<string, any>
+  ): Promise<HttpResponse>;
 }
 
 /**
- * Hodr-abstraction of the components of a HTTP request. Clearly not the full story of
+ * Hodr-abstraction of the components of an HTTP request. Clearly not the full story of
  * HTTP, but will suffice for most shoveling and funneling of data between micro-services.
  *
  * It's not intended to deal with technical aspects of a request - formatting multipart

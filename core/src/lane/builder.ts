@@ -1,7 +1,7 @@
-import { HodrContext } from '../context';
+import type { ExecutionContext } from '../context';
 import { HttpClient, HttpResponse } from '../destination';
 import { FileSystemDestinationAdapter } from '../destination/fs';
-import { HttpClientDestinationAdapter } from '../destination/http';
+import { DefaultHttpClientDestinationAdapter } from '../destination/http';
 import { HttpClientConfig, HttpClientProvider } from '../engine';
 import { extractPath } from '../engine/transform';
 import { ObjectPathReference } from '../engine/types';
@@ -24,7 +24,7 @@ export class UnitOfWorkBuilder<Payload = any> {
   constructor(public unitOfWork: UnitOfWork) {}
 
   /* Run a transformation step before anything else */
-  transform<T>(fn: (ctx: HodrContext<Payload>) => Promise<T>): UnitOfWorkBuilder<T> {
+  transform<T>(fn: (ctx: ExecutionContext<Payload>) => Promise<T>): UnitOfWorkBuilder<T> {
     this.unitOfWork.steps.push(new TransformStep<Payload, T>(fn));
     return new UnitOfWorkBuilder<T>(this.unitOfWork);
   }
@@ -66,7 +66,7 @@ export class UnitOfWorkBuilder<Payload = any> {
   ) {
     this.unitOfWork.steps.push({
       name: 'extract-http-body',
-      execute: (ctx: HodrContext<HttpResponse>) => {
+      execute: (ctx: ExecutionContext<HttpResponse>) => {
         return Promise.resolve(extractPath(ctx.payload.body, path) as T);
       },
     });
@@ -102,6 +102,9 @@ class HodrHttpClientDestinationBuilderStub implements HttpClientDestinationBuild
 
   using(client: HttpClientProvider): void {
     const clientInstance: HttpClient = client(this.httpClientConfig);
-    this.service.adapter = new HttpClientDestinationAdapter(this.root, clientInstance);
+    this.service.adapter = new DefaultHttpClientDestinationAdapter(
+      this.root,
+      clientInstance
+    );
   }
 }

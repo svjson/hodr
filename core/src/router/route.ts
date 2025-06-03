@@ -1,4 +1,14 @@
-import { HodrRoute as HodrRouteInterface } from './types';
+import { Hodr } from '../types';
+import { ExecutionContext } from '../context';
+import { HttpRequest } from '../destination';
+import {
+  HodrRoute as HodrRouteInterface,
+  HodrRouterErrorFormatterParams,
+  HodrRouterFinalizationParams,
+} from './types';
+import { HodrContext } from '../context/context';
+import { InitialStepExecution, StepExecution } from '../engine';
+import { UnitOfWork } from '../lane';
 
 /**
  * Describes the lane/unit-of-work associated with an HTTP route, as well as
@@ -10,6 +20,7 @@ export class HodrRoute implements HodrRouteInterface {
 
   constructor(
     readonly root: () => Hodr,
+    readonly router: string,
     readonly method: string,
     readonly path: string,
     public unitOfWork: UnitOfWork,
@@ -21,6 +32,28 @@ export class HodrRoute implements HodrRouteInterface {
 
   variant(): string {
     return this.method;
+  }
+
+  newExecution(
+    request: HttpRequest,
+    initialStep: InitialStepExecution,
+    metadata?: Record<string, any>
+  ): ExecutionContext<HttpRequest> {
+    const ctx = new HodrContext<HttpRequest>({
+      origin: {
+        name: this.router,
+        input: this.path,
+        variant: this.method,
+      },
+      unit: this.unitOfWork,
+      metadata: metadata ?? {},
+      initialStep: initialStep,
+      currentStep: initialStep,
+      payload: request,
+      inputTopic: '',
+    });
+
+    return ctx;
   }
 
   /**
@@ -68,7 +101,7 @@ export class HodrRoute implements HodrRouteInterface {
                 entry: String(e),
               };
 
-        execStep.metadata.journal.push({
+        ctx.addJournalEntry({
           id: 'error',
           title: 'Error',
           ...details,

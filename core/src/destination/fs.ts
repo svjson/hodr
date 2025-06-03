@@ -1,4 +1,4 @@
-import { HodrContext } from '../context';
+import { ExecutionContext } from '../context';
 import { DestinationAdapter } from '../engine';
 
 /**
@@ -26,7 +26,7 @@ import { DestinationAdapter } from '../engine';
 export class FileSystemDestinationAdapter implements DestinationAdapter {
   constructor(readonly root: string) {}
 
-  async invoke(ctx: HodrContext<string>, path: string): Promise<any> {
+  async invoke(ctx: ExecutionContext<string>, path: string): Promise<any> {
     ctx.metadata.payloadTypeHint = 'static-content';
     return [this.root, ctx.payload].join('/');
   }
