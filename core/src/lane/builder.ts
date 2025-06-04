@@ -1,17 +1,23 @@
 import type { ExecutionContext } from '../context';
 import { HttpClient, HttpResponse } from '../destination';
-import { FileSystemDestinationAdapter } from '../destination/fs';
-import { DefaultHttpClientDestinationAdapter } from '../destination/http';
+import { FileSystemDestinationAdapter } from '../destination';
+import { DefaultHttpClientDestinationAdapter } from '../destination';
 import { HttpRequest } from '../destination/types';
-import { HodrError, HttpClientConfig, HttpClientProvider } from '../engine';
-import { extractPath } from '../engine/transform';
-import { ObjectPathReference } from '../engine/types';
-import { httpStatusMatcher, HttpStatusPattern } from '../engine/validate';
+import type {
+  ExtractionMap,
+  HttpClientConfig,
+  HttpClientProvider,
+  HttpStatusPattern,
+  ObjectPathReference,
+  StatusCondMap,
+} from '../engine';
+import { HodrError, extractPath, httpStatusMatcher } from '../engine';
 import { Hodr } from '../types';
 import { HodrDestination } from './destination';
 import {
   CallStep,
   ExtractStep,
+  MapStatusCodeStep,
   ParallelStep,
   SequenceStep,
   TransformStep,
@@ -19,7 +25,6 @@ import {
 } from './step';
 import type {
   DestinationBuilder,
-  ExtractionMap,
   HodrStep,
   HttpClientDestinationBuilderStub,
   Lane,
@@ -128,6 +133,11 @@ export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
       },
     });
     return new LaneBuilder<T>(this.root, this.lane);
+  }
+
+  mapStatusCode(statusMap: StatusCondMap): HttpResponseLaneBuilder {
+    this.lane.steps.push(new MapStatusCodeStep(statusMap));
+    return this;
   }
 }
 

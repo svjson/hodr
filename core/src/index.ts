@@ -7,13 +7,14 @@ export { ExecutionContext } from './context';
 
 export type { HttpClient, HttpRequest, HttpResponse } from './destination';
 
-export { extractMap, extractPath } from './engine';
+export { extractMap, extractPath, mapStatusCode } from './engine';
 export type {
   FinalizeStepExecution,
   HttpClientConfig,
   HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
+  StatusCondMap,
   StepExecution,
   StepMetadata,
   Validator,

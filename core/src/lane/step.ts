@@ -1,8 +1,10 @@
 import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
-import { extractMap } from '../engine';
+import { StatusCondMap, ExtractionMap, extractMap, StatusCondEntry } from '../engine';
+import { mapStatusCode } from '../engine/transform';
+import { HttpStatusRange } from '../engine/validate';
 import { Hodr } from '../types';
-import { ExtractionMap, HodrStep } from './types';
+import { HodrStep } from './types';
 
 // Step for calling a named downstream service
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -97,7 +99,7 @@ export class ParallelStep<I, S extends readonly HodrStep<I, any>[]>
   }
 }
 
-// Step for executing a sequence of steps in order
+/* Step for executing a sequence of steps in order */
 export class SequenceStep<I, T> implements HodrStep {
   name = 'sequence';
 
@@ -107,5 +109,18 @@ export class SequenceStep<I, T> implements HodrStep {
     for (const step of this.steps) {
       await step.execute(ctx);
     }
+  }
+}
+
+/* Step for re-mapping an HTTP Status code */
+export class MapStatusCodeStep implements HodrStep<HttpResponse, HttpResponse> {
+  name = 'map-status-code';
+
+  constructor(private statusMap: StatusCondMap) {}
+
+  async execute(ctx: ExecutionContext<HttpResponse>): Promise<HttpResponse> {
+    ctx.payload!.statusCode = mapStatusCode(ctx.payload!.statusCode, this.statusMap);
+
+    return ctx.payload!;
   }
 }

@@ -6,15 +6,21 @@
  * and snippets that does... things, alright?
  */
 export { memoryTracker } from './tracker';
-export { extractMap, extractPath } from './transform';
+export { extractMap, extractPath, mapStatusCode } from './transform';
+export { type HttpStatusPattern, httpStatusMatcher } from './validate';
+
 export type {
   DestinationAdapter,
+  ExtractionMap,
   FinalizeStepExecution,
   HttpClientConfig,
   HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
+  ObjectPathReference,
   Tracker,
+  StatusCondEntry,
+  StatusCondMap,
   StepExecution,
   StepMetadata,
   StepStatus,

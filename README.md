@@ -249,11 +249,11 @@ _ // ...
   .httpGet('core-service', '/api/:targetType/thread/:targetId', {
     parameters: 'threadId'
   })
-  .mapStatusCode({
-    404: 200, // The word on the streets is that 404 is the new 200!
-    [400, 417]: 418, // Everything's a teapot! Except 404, which takes precedence because more specific.
-    [501, 511]: 500 // The client doesn't need to know that we're out of storage or that a variant also negotiates(whatever that means).
-  })
+  .mapStatusCode([
+    [404, 200], // The word on the streets is that 404 is the new 200!
+    [[400, 417]: 418], // Everything's a teapot! Except 404, which takes precedence because more specific.
+    [[501, 511]: 500] // The client doesn't need to know that we're out of storage or that a variant also negotiates(whatever that means).
+  ])
 
   // ...
 
@@ -504,14 +504,14 @@ immediately on its own lane. The rest should refer to and delegate to re-usable 
 ```ts
   leasingService.target('update-listing-status')
     .put('/listings/:listingId/status')
-    .mapStatusCode({
-      404: (step) => { 
+    .mapStatusCode([
+      [404, (step) => {
         step.error({statusCode: 404, code: 'not-found', message: 'Listing does not exist.' })
         step.log('error', 'This really should not happen. Like really, really not.')
-      },
-      409: { statusCode: 409, code: 'conflict', message: 'Listing status may not be updated further.' },
-      500: { statusCode: 500, code: 'generic', message: 'The server is broken, on fire or just refusing to cooperate.' },
-    })
+      ],
+      [409, { statusCode: 409, code: 'conflict', message: 'Listing status may not be updated further.' },
+      [500, { statusCode: 500, code: 'generic', message: 'The server is broken, on fire or just refusing to cooperate.' },
+    ])
     .expectStatus(200, 204)
     .extract('content')
     .log('info', 'Listing {listingId} updated to status "{status}"')

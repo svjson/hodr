@@ -1,6 +1,7 @@
 import { ExecutionContext } from '../context';
 import { HttpClient } from '../destination';
 import { Usable } from '../lane/types';
+import { HttpStatusPattern } from './validate';
 
 /**
  * The valid states that an ExecutionStep can have.
@@ -87,6 +88,19 @@ export type ObjectPathReference = string | string[];
 export interface DestinationAdapter {
   invoke(ctx: ExecutionContext<unknown>, path: string): Promise<any>;
 }
+
+/**
+ * Directive for extract operations.
+ */
+export interface ExtractionMap {
+  [key: string]: string | ExtractionMap;
+}
+
+/**
+ * Directive for status mapping
+ */
+export type StatusCondEntry = [HttpStatusPattern, number];
+export type StatusCondMap = StatusCondEntry[];
 
 /**
  * The mighty and feared HttpClientConfig, consisting of a base URL. Yeah, that's it.
