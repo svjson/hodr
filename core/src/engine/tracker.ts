@@ -1,22 +1,22 @@
 import { ExecutionContext } from '../context';
-import { Recorder } from './types';
+import { Tracker } from './types';
 
-export type MemoryRecorderConfig = { name?: string; limit?: number };
+export type MemoryTrackerConfig = { name?: string; limit?: number };
 
 /**
- * This Recorder implementation stacks execution contexts in memory like a game of Jenga.
+ * This Tracker implementation stacks execution contexts in memory like a game of Jenga.
  *
  * The circular fifo storage promised in the interface is still very much on the to-do list,
  * so don't leave it running and forget about it while you're off to the beach.
  */
-class MemoryRecorder implements Recorder {
+class MemoryTracker implements Tracker {
   __type: 'tracker' = 'tracker';
   name: string;
   limit: number;
   contexts: ExecutionContext<any>[] = [];
 
-  constructor(config: MemoryRecorderConfig) {
-    this.name = config.name ?? 'memory-recorder';
+  constructor(config: MemoryTrackerConfig) {
+    this.name = config.name ?? 'memory-tracker';
     this.limit = config.limit || 100;
   }
 
@@ -30,11 +30,11 @@ class MemoryRecorder implements Recorder {
 }
 
 /**
- * Factory-method for MemoryRecorder
+ * Factory-method for MemoryTracker
  */
-export const memoryRecorder = (config: MemoryRecorderConfig): Recorder => {
-  return new MemoryRecorder({
-    name: config.name ?? 'memory-recorder',
+export const memoryTracker = (config: MemoryTrackerConfig): Tracker => {
+  return new MemoryTracker({
+    name: config.name ?? 'memory-tracker',
     ...config,
   });
 };

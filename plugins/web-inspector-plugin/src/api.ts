@@ -33,7 +33,7 @@ export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
     .get('/__inspector/api/origins/:origin/input/:input/:variant/executions')
     .transform(async (ctx) => {
       const input = decodeURIComponent(ctx.payload.params?.input as string);
-      return hodr.recorders['memory-recorder']
+      return hodr.trackers['memory-tracker']
         .getRecorded()
         .filter(
           (recCtx) =>
@@ -44,7 +44,7 @@ export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
     });
 
   api.get('/__inspector/api/inputs/executions/').transform(async (_) => {
-    return hodr.recorders['memory-recorder']
+    return hodr.trackers['memory-tracker']
       .getRecorded()
       .filter((ctx) => ctx.origin.name !== '__inspector');
   });

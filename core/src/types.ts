@@ -1,4 +1,4 @@
-import { Recorder, Validator } from './engine';
+import { Tracker, Validator } from './engine';
 import { Destination, DestinationBuilder, Origin, Usable } from './lane';
 import { HodrRouter } from './router';
 
@@ -15,7 +15,7 @@ import { HodrRouter } from './router';
  */
 export interface Hodr {
   origins: Record<string, Origin>;
-  recorders: Record<string, Recorder>;
+  trackers: Record<string, Tracker>;
   services: Record<string, Destination>;
   validators: Validator[];
 

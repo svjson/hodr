@@ -111,12 +111,8 @@ export interface Validator extends Usable {
 
 /**
  * Interface for recording execution contexts.
- *
- * It actually works more like a repository than just a recorder, so this should
- * probably be renamed. Tracker? Repository? It's kind of a log, but let's not overload
- * that term too.
  */
-export interface Recorder extends Usable {
+export interface Tracker extends Usable {
   readonly __type: 'tracker';
   name: string;
 

@@ -1,4 +1,4 @@
-import { Recorder, Validator } from './engine';
+import { Tracker, Validator } from './engine';
 import { Destination, DestinationBuilder, Origin, Usable } from './lane';
 import { HodrDestinationBuilder } from './lane/builder';
 import { HodrDestination } from './lane/destination';
@@ -9,7 +9,7 @@ import type { Hodr as HodrInterface } from './types';
 class Hodr implements HodrInterface {
   origins: Record<string, Origin> = {};
   services: Record<string, Destination> = {};
-  recorders: Record<string, Recorder> = {};
+  trackers: Record<string, Tracker> = {};
   validators: Validator[] = [];
 
   router(name: string): HodrRouter {
@@ -27,7 +27,7 @@ class Hodr implements HodrInterface {
   use(feature: Usable): Hodr {
     switch (feature.__type) {
       case 'tracker':
-        this.recorders[(feature as Recorder).name] = feature as Recorder;
+        this.trackers[(feature as Tracker).name] = feature as Tracker;
         break;
       case 'validator':
         this.validators.push(feature as Validator);

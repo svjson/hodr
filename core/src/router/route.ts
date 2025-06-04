@@ -112,8 +112,8 @@ export class HodrRoute implements HodrRouteInterface {
   }
 
   record(ctx: HodrContext<any>) {
-    Object.values(this.root().recorders).forEach((recorder) => {
-      recorder.record(ctx);
+    Object.values(this.root().trackers).forEach((tracker) => {
+      tracker.record(ctx);
     });
   }
 }

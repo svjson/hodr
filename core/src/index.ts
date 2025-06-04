@@ -19,5 +19,5 @@ export type {
   Validator,
 } from './engine';
 
-export { HodrError, memoryRecorder } from './engine';
+export { HodrError, memoryTracker } from './engine';
 export type { HodrRoute, HodrRouter } from './router';

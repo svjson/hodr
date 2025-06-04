@@ -5,7 +5,7 @@
  * Well, "engine" might be a bit pompous at this point. It's a collection of types
  * and snippets that does... things, alright?
  */
-export { memoryRecorder } from './recorder';
+export { memoryTracker } from './tracker';
 export { extractMap, extractPath } from './transform';
 export type {
   DestinationAdapter,
@@ -14,7 +14,7 @@ export type {
   HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
-  Recorder,
+  Tracker,
   StepExecution,
   StepMetadata,
   StepStatus,
