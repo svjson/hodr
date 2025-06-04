@@ -16,6 +16,7 @@
     "build:axios-plugin": "npm --workspace @hodr/axios-plugin run build",
     "build:web-inspector-plugin": "npm --workspace @hodr/web-inspector-plugin run build",
     "build:zod-plugin": "npm --workspace @hodr/zod-plugin run build",
+    "test": "npm --workspace @hodr/core run test && npm --workspace @hodr/zod-plugin run test",
     "format": "prettier --write ."
   },
   "devDependencies": {

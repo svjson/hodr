@@ -50,10 +50,11 @@ describe('Zod Validator', () => {
       const ctx = makeCtx(object);
 
       // When
-      const result = validator.validate(ctx, CommentSchema, ctx.payload);
+      const result = validator.validate(ctx, CommentSchema);
 
       // Then
       expect(result).toMatchObject(object);
+      expect(ctx.currentStep.metadata.journal.length).toBe(0);
     });
 
     it('should fail validation for an object with a missing field and throw an Exception', () => {
@@ -71,8 +72,57 @@ describe('Zod Validator', () => {
 
       // When-Then
       expect(() => {
-        result = validator.validate(ctx, CommentSchema, object);
+        result = validator.validate(ctx, CommentSchema);
       }).toThrowError(new HodrError('Field "createdAt": Required'));
+
+      // Then
+      expect(result).toBeNull();
+      expect(ctx.currentStep.metadata.journal.length).toBe(2);
+    });
+
+    it('should pass validation for a well-formed object at target path and return the validated object', () => {
+      // Given
+      const object = {
+        someOther: 'jibber-jabber',
+        comment: {
+          id: 572,
+          type: 'WARNING',
+          authorName: 'Odie',
+          authorId: 'e485055c-4155-11f0-8355-a686bd02fbe0',
+          comment: 'Beware of cat!',
+          createdAt: new Date(),
+        },
+      };
+      const ctx = makeCtx(object);
+
+      // When
+      const result = validator.validate(ctx, CommentSchema, 'comment');
+
+      // Then
+      expect(result).toMatchObject(object);
+      expect(ctx.currentStep.metadata.journal.length).toBe(0);
+    });
+
+    it('should fail validation for an object with a missing field at target path and throw an Exception', () => {
+      // Given
+      const object = {
+        someOther: 'jibber-jabber',
+        comment: {
+          id: 572,
+          type: 'WARNING',
+          authorName: 'Odie',
+          comment: 'Beware of cat!',
+          createdAt: new Date(),
+        },
+      };
+      const ctx = makeCtx(object);
+
+      let result: any = null;
+
+      // When-Then
+      expect(() => {
+        result = validator.validate(ctx, CommentSchema, 'comment');
+      }).toThrowError(new HodrError('Field "authorId": Required'));
 
       // Then
       expect(result).toBeNull();

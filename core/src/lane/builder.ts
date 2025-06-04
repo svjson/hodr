@@ -3,7 +3,7 @@ import { HttpClient, HttpResponse } from '../destination';
 import { FileSystemDestinationAdapter } from '../destination/fs';
 import { DefaultHttpClientDestinationAdapter } from '../destination/http';
 import { HttpRequest } from '../destination/types';
-import { HttpClientConfig, HttpClientProvider } from '../engine';
+import { HodrError, HttpClientConfig, HttpClientProvider } from '../engine';
 import { extractPath } from '../engine/transform';
 import { ObjectPathReference } from '../engine/types';
 import { httpStatusMatcher, HttpStatusPattern } from '../engine/validate';
@@ -66,8 +66,18 @@ export class LaneBuilder<Payload = any> {
   }
 
   /** Register a validation step */
-  validate(validatorObject: any): this {
-    this.lane.steps.push(new ValidateStep(this.root, validatorObject));
+  validate(validatorObject: any): this;
+  validate(path: string, validatorObject: any): this;
+  validate(arg1: any, arg2?: any): this {
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new HodrError('Invalid validator step configuration');
+    }
+    if (arg2 === undefined) {
+      this.lane.steps.push(new ValidateStep(this.root, arg1));
+    } else {
+      this.lane.steps.push(new ValidateStep(this.root, arg2, arg1));
+    }
+
     return this;
   }
 }

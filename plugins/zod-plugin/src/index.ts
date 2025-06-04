@@ -1,4 +1,4 @@
-import { ExecutionContext, HodrError, Validator } from '@hodr/core';
+import { ExecutionContext, HodrError, Validator, extractPath } from '@hodr/core';
 import { ZodError, ZodType } from 'zod';
 
 const formatErrors = (error: ZodError): string => {
@@ -21,8 +21,10 @@ export const validator: Validator = {
     return schema instanceof ZodType || typeof schema.safeParse === 'function';
   },
 
-  validate: <T = unknown>(ctx: ExecutionContext<T>, schema: any, obj: T): T => {
-    const parseResult = (schema as ZodType).safeParse(obj);
+  validate: <T = unknown>(ctx: ExecutionContext<T>, schema: any, targetPath?: string): T => {
+    const parseResult = (schema as ZodType).safeParse(
+      targetPath ? extractPath(ctx.payload, targetPath) : ctx.payload
+    );
 
     if (!parseResult.success) {
       const formattedErrors = formatErrors(parseResult.error);
@@ -41,6 +43,6 @@ export const validator: Validator = {
       throw new HodrError(formattedErrors);
     }
 
-    return obj;
+    return ctx.payload;
   },
 };

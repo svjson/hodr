@@ -66,13 +66,14 @@ export class ValidateStep<T> implements HodrStep<T, T> {
 
   constructor(
     private root: () => Hodr,
-    private validatorObject: any
+    private validatorObject: any,
+    private targetPath?: string
   ) {}
 
   async execute(ctx: ExecutionContext<T>): Promise<T> {
     for (const validator of this.root().validators) {
       if (validator.canValidate(this.validatorObject)) {
-        return validator.validate(ctx, this.validatorObject, ctx.payload);
+        return validator.validate(ctx, this.validatorObject, this.targetPath);
       }
     }
     return ctx.payload;

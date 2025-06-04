@@ -106,7 +106,11 @@ export interface HttpClientDestinationAdapter extends DestinationAdapter {}
 export interface Validator extends Usable {
   readonly __type: 'validator';
   canValidate(validationType: any): boolean;
-  validate<T = unknown>(ctx: ExecutionContext<T>, validationType: any, payload: T): T;
+  validate<T = unknown>(
+    ctx: ExecutionContext<T>,
+    validationType: any,
+    targetPath?: string
+  ): T;
 }
 
 /**

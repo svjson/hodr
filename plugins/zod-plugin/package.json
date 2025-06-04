@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --build",
-    "test": "vitest run",
+    "test": "vitest run .",
     "test:watch": "vitest"
   },
   "peerDependencies": {
