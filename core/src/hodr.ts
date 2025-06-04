@@ -26,20 +26,13 @@ class Hodr implements HodrInterface {
 
   use(feature: Usable): Hodr {
     switch (feature.__type) {
+      case 'tracker':
+        this.recorders[(feature as Recorder).name] = feature as Recorder;
+        break;
       case 'validator':
         this.validators.push(feature as Validator);
         break;
     }
-    return this;
-  }
-
-  useValidator(validator: Validator): Hodr {
-    this.validators.push(validator);
-    return this;
-  }
-
-  useRecorder(recorder: Recorder): Hodr {
-    this.recorders[recorder.name] = recorder;
     return this;
   }
 }

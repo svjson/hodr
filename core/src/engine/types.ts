@@ -116,7 +116,8 @@ export interface Validator extends Usable {
  * probably be renamed. Tracker? Repository? It's kind of a log, but let's not overload
  * that term too.
  */
-export interface Recorder {
+export interface Recorder extends Usable {
+  readonly __type: 'tracker';
   name: string;
 
   record(ctx: ExecutionContext<any>): void;

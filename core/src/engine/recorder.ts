@@ -10,6 +10,7 @@ export type MemoryRecorderConfig = { name?: string; limit?: number };
  * so don't leave it running and forget about it while you're off to the beach.
  */
 class MemoryRecorder implements Recorder {
+  __type: 'tracker' = 'tracker';
   name: string;
   limit: number;
   contexts: ExecutionContext<any>[] = [];

@@ -52,7 +52,7 @@ export interface ExtractionMap {
   [key: string]: string | ExtractionMap;
 }
 
-export type UsableType = 'validator';
+export type UsableType = 'tracker' | 'validator';
 
 export interface Usable {
   __type: UsableType;

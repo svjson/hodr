@@ -13,4 +13,5 @@ export type {
   Lane,
   Origin,
   Usable,
+  UsableType,
 } from './types';

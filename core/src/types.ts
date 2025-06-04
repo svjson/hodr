@@ -22,6 +22,5 @@ export interface Hodr {
   service(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 
-  useValidator(validator: Validator): Hodr;
-  useRecorder(recorder: Recorder): Hodr;
+  use(feature: Usable): Hodr;
 }
