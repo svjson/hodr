@@ -1,6 +1,7 @@
 import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
 import { extractMap } from '../engine';
+import { Hodr } from '../types';
 import { ExtractionMap, HodrStep } from './types';
 
 // Step for calling a named downstream service
@@ -48,7 +49,7 @@ export class ExtractStep<I, T> implements HodrStep<I, T> {
   }
 }
 
-// Step for executing arbitrary transformation logic
+/** Step for executing arbitrary transformation logic */
 export class TransformStep<I, T> implements HodrStep<I, T> {
   name = 'transform';
 
@@ -56,6 +57,25 @@ export class TransformStep<I, T> implements HodrStep<I, T> {
 
   async execute(ctx: ExecutionContext<I>): Promise<T> {
     return await this.fn(ctx);
+  }
+}
+
+/** Step for validating the payload with a validator object */
+export class ValidateStep<T> implements HodrStep<T, T> {
+  name = 'validate';
+
+  constructor(
+    private root: () => Hodr,
+    private validatorObject: any
+  ) {}
+
+  async execute(ctx: ExecutionContext<T>): Promise<T> {
+    for (const validator of this.root().validators) {
+      if (validator.canValidate(this.validatorObject)) {
+        return validator.validate(ctx, this.validatorObject, ctx.payload);
+      }
+    }
+    return ctx.payload;
   }
 }
 

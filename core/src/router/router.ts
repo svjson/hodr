@@ -66,6 +66,6 @@ export class DefaultHodrRouter implements HodrRouter {
       this._formatError
     );
     this.routes.push(route);
-    return new RouterLaneBuilder(lane);
+    return new RouterLaneBuilder(this.root, lane);
   }
 }

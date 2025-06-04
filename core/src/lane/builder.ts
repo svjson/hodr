@@ -9,7 +9,14 @@ import { ObjectPathReference } from '../engine/types';
 import { httpStatusMatcher, HttpStatusPattern } from '../engine/validate';
 import { Hodr } from '../types';
 import { HodrDestination } from './destination';
-import { CallStep, ExtractStep, ParallelStep, SequenceStep, TransformStep } from './step';
+import {
+  CallStep,
+  ExtractStep,
+  ParallelStep,
+  SequenceStep,
+  TransformStep,
+  ValidateStep,
+} from './step';
 import type {
   DestinationBuilder,
   ExtractionMap,
@@ -23,18 +30,21 @@ import type {
  * up a lane/unit-of-work.
  */
 export class LaneBuilder<Payload = any> {
-  constructor(public lane: Lane) {}
+  constructor(
+    protected root: () => Hodr,
+    public lane: Lane
+  ) {}
 
   /** Register an extract step */
   extract<T>(directive: ExtractionMap | string): LaneBuilder<T> {
     this.lane.steps.push(new ExtractStep(directive));
-    return new LaneBuilder<T>(this.lane);
+    return new LaneBuilder<T>(this.root, this.lane);
   }
 
   /** Register a transform step */
   transform<T>(fn: (ctx: ExecutionContext<Payload>) => Promise<T>): LaneBuilder<T> {
     this.lane.steps.push(new TransformStep<Payload, T>(fn));
-    return new LaneBuilder<T>(this.lane);
+    return new LaneBuilder<T>(this.root, this.lane);
   }
 
   /** Register a sequencial step */
@@ -54,17 +64,23 @@ export class LaneBuilder<Payload = any> {
     this.lane.steps.push(new CallStep(destination, path));
     return this;
   }
+
+  /** Register a validation step */
+  validate(validatorObject: any): LaneBuilder<Payload> {
+    this.lane.steps.push(new ValidateStep(this.root, validatorObject));
+    return this;
+  }
 }
 
 export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {
   httpGet(service: string, path: string): HttpResponseLaneBuilder {
     this.lane.steps.push(new CallStep(service, path));
-    return new HttpResponseLaneBuilder(this.lane);
+    return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
   httpPost(service: string, path: string): HttpResponseLaneBuilder {
     this.lane.steps.push(new CallStep(service, path));
-    return new HttpResponseLaneBuilder(this.lane);
+    return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 }
 
@@ -86,7 +102,7 @@ export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
         return Promise.resolve(extractPath(ctx.payload.body, path) as T);
       },
     });
-    return new LaneBuilder<T>(this.lane);
+    return new LaneBuilder<T>(this.root, this.lane);
   }
 }
 

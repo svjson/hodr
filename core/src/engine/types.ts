@@ -1,5 +1,6 @@
 import { ExecutionContext } from '../context';
 import { HttpClient } from '../destination';
+import { Usable } from '../lane/types';
 
 /**
  * The valid states that an ExecutionStep can have.
@@ -101,6 +102,12 @@ export interface HttpClientConfig {
 export type HttpClientProvider = (httpClientConfig: HttpClientConfig) => HttpClient;
 
 export interface HttpClientDestinationAdapter extends DestinationAdapter {}
+
+export interface Validator extends Usable {
+  readonly __type: 'validator';
+  canValidate(validationType: any): boolean;
+  validate<T = unknown>(ctx: ExecutionContext<T>, validationType: any, payload: T): T;
+}
 
 /**
  * Interface for recording execution contexts.

@@ -16,6 +16,7 @@ export type {
   MetaJournalEntry,
   StepExecution,
   StepMetadata,
+  Validator,
 } from './engine';
 
 export { HodrError, memoryRecorder } from './engine';

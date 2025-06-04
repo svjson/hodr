@@ -1,5 +1,5 @@
-import { Recorder } from './engine';
-import { Destination, DestinationBuilder, Origin } from './lane';
+import { Recorder, Validator } from './engine';
+import { Destination, DestinationBuilder, Origin, Usable } from './lane';
 import { HodrRouter } from './router';
 
 /*
@@ -15,11 +15,13 @@ import { HodrRouter } from './router';
  */
 export interface Hodr {
   origins: Record<string, Origin>;
-  services: Record<string, Destination>;
   recorders: Record<string, Recorder>;
+  services: Record<string, Destination>;
+  validators: Validator[];
 
   service(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 
+  useValidator(validator: Validator): Hodr;
   useRecorder(recorder: Recorder): Hodr;
 }

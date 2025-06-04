@@ -10,7 +10,6 @@ export { extractMap, extractPath } from './transform';
 export type {
   DestinationAdapter,
   FinalizeStepExecution,
-  HodrError,
   HttpClientConfig,
   HttpClientProvider,
   InitialStepExecution,
@@ -19,4 +18,7 @@ export type {
   StepExecution,
   StepMetadata,
   StepStatus,
+  Validator,
 } from './types';
+
+export { HodrError } from './types';

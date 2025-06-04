@@ -51,3 +51,9 @@ export interface HttpClientDestinationBuilderStub {
 export interface ExtractionMap {
   [key: string]: string | ExtractionMap;
 }
+
+export type UsableType = 'validator';
+
+export interface Usable {
+  __type: UsableType;
+}

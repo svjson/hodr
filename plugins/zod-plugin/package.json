@@ -1,0 +1,37 @@
+{
+  "name": "@hodr/zod-plugin",
+  "version": "0.1.0",
+  "author": "Sven Johansson",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@hodr/core": "",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@hodr/core": "",
+    "zod": "^3.23.8",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.4.0",
+    "vitest": "^3.1.4"
+  }
+}
