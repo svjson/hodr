@@ -186,7 +186,6 @@ Expressing the same execution path in Hodr could look like this:
       ...comment,
     }))
     .httpPost('core-service', '/api/:targetType/thread/:targetId', {
-      method: 'POST',
       parameters: 'threadId',
       body: 'comment',
     })
@@ -231,7 +230,6 @@ semantics or actual insanity, we'll simply override and/or remap them.
 _ // ...
   
   .httpGet('core-service', '/api/:targetType/thread/:targetId', {
-    method: 'GET',
     parameters: 'threadId'
   })
   .mapStatusCode({
@@ -254,7 +252,6 @@ This would look something like this:
 _ // ...
 
   .httpGet('core-service', '/api/:targetType/thread/:targetId', {
-    method: 'GET',
     parameters: 'threadId'
   })
   .expectStatus(200, 404)
@@ -299,7 +296,6 @@ this one guy - just like in real life - that just won't acknowldge that he's in 
 _ // ...
    
   .httpPost('core-service', '/api/users/:userId/avatar', {
-    method: 'POST',
     parameters: 'threadId',
     body: 'comment',
   })
