@@ -191,11 +191,26 @@ Expressing the same execution path in Hodr could look like this:
     })
     .select('body.content')
 ```
+The key here is how the steps relate to eachother - that they will execute *in sequence*
+with the output from each step being passed on as the input to the next.
 
-Let's break down what's going on here.
+As such, there's nothing radically new under the sun here. Most - if not all - of Hodr's
+ideas echo tried and tested paradigms:
 
-The key part to understanding how the steps relate to eachother is that they will execute 
-*in sequence* and the main input for each step is the result/output of the previous step.
+- **Promise chaining**, in how the result of one - potentially asynchronous - operation
+passes its output to the next.
+
+- **Functional programming**, in how behavior is composed from small, testable units that
+are (mostly) free of side effects — except when we explicitly invoke destinations.
+
+- **Lisp**, in the sense that everything is a step: composable, introspectable, and even
+programmatically generated.
+
+- **Integration Patterns (à la Apache Camel)**, where Hodr acts as a lightweight EIP
+pipeline - inputs flow in, metadata is attached, decisions are made, side effects may
+occur, execution may be halted, or an output emitted.
+
+Let's break down what's going in the steps we just saw:
 
 | Step               | Arguments                           | Description                                                                                                                                                                                                                                                 |
 |--------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -210,6 +225,8 @@ A few things might stand out, glaringly so even:
 - The error handling is suspiciously absent from this chain of steps.
 - We are not formatting or advising how the response whould be shaped in any way!
 - It looks practical and easy to read(if you buy into the idea), but what if this format doesn't cater to my requirements?
+
+Let's address these three points over the next three sub-sections:
 
 ### Error handling
 
@@ -452,7 +469,7 @@ const result = await userProfilePipeline.run({ user, metadata });
 
 The pipeline doesn’t care who called it - just that it received the inputs it was promised.
 
-Without a route Origin pulling strings, there is no assumption of starting with an 
+Without a route Origin pulling the strings, there is no assumption of starting off from an
 HTTP Request and ending up with an HTTP Response.
 
 <br>
