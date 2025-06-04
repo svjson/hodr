@@ -66,7 +66,7 @@ export class LaneBuilder<Payload = any> {
   }
 
   /** Register a validation step */
-  validate(validatorObject: any): LaneBuilder<Payload> {
+  validate(validatorObject: any): this {
     this.lane.steps.push(new ValidateStep(this.root, validatorObject));
     return this;
   }
