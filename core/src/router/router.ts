@@ -50,6 +50,10 @@ export class DefaultHodrRouter implements HodrRouter {
     return this._addRoute('PUT', path);
   }
 
+  patch(path: string): RouterLaneBuilder {
+    return this._addRoute('PATCH', path);
+  }
+
   delete(path: string): RouterLaneBuilder {
     return this._addRoute('DELETE', path);
   }

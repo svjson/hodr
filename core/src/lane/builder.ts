@@ -92,6 +92,21 @@ export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {
     this.lane.steps.push(new CallStep(service, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
+
+  httpPut(service: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(service, path));
+    return new HttpResponseLaneBuilder(this.root, this.lane);
+  }
+
+  httpPatch(service: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(service, path));
+    return new HttpResponseLaneBuilder(this.root, this.lane);
+  }
+
+  httpDelete(service: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(service, path));
+    return new HttpResponseLaneBuilder(this.root, this.lane);
+  }
 }
 
 export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
