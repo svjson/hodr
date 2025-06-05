@@ -167,6 +167,7 @@ const buildRequest = (koaContext: KoaContext, route: HodrRoute): HttpRequest => 
     uri: route.path,
     headers: koaContext.headers,
     params: koaContext.params,
+    session: koaContext.session,
     body: koaContext.request.body,
   };
 };

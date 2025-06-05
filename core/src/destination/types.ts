@@ -24,6 +24,7 @@ export interface HttpRequest {
   method: string;
   uri: string;
   headers?: unknown;
+  session?: { [key: PropertyKey]: any };
   params?: Record<string, string>;
   body?: unknown;
 }
