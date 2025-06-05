@@ -7,7 +7,7 @@ interface SectionModel {
   lmnt: HTMLElement;
   data: any | null;
   hidden: boolean;
-  description: string | null;
+  description?: string;
   typeHint?: string;
 }
 
@@ -45,7 +45,12 @@ const makeVisualModel = (sectionContainer: HTMLElement, step: StepModel): Sectio
   Array.prototype.slice
     .call(sectionContainer.querySelectorAll('.payload-panel'))
     .map((panelLmnt: HTMLElement) => {
-      const panel = { lmnt: panelLmnt, data: null, hidden: false, description: '', typeHint: null };
+      const panel: SectionModel = {
+        lmnt: panelLmnt,
+        data: null,
+        hidden: false,
+        description: '',
+      };
       const id = panelLmnt.getAttribute('data-id');
 
       switch (id) {
@@ -58,7 +63,9 @@ const makeVisualModel = (sectionContainer: HTMLElement, step: StepModel): Sectio
           panel.description = step.metadata.output?.description ?? '';
           break;
         default:
-          const entry = step.metadata.journal.find((entry: MetaJournalEntry) => entry.id == id);
+          const entry = step.metadata.journal.find(
+            (entry: MetaJournalEntry) => entry.id == id
+          );
           panel.data = entry?.entry;
           panel.hidden = entry === undefined;
           panel.description = entry?.description;
@@ -109,9 +116,11 @@ export const displayStepDetails = (sectionContainer: HTMLElement, step: StepMode
         case 'plaintext':
         case 'stacktrace':
           content = (
-            <code class="scroll small">
-              <pre>{data}</pre>
-            </code>
+            <div class="scroll small">
+              <code>
+                <pre>{data}</pre>
+              </code>
+            </div>
           );
           break;
         default:

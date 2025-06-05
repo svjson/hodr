@@ -1,6 +1,6 @@
-import { StepMetadata } from '@hodr/core';
+import { StepMetadata, MetaJournalEntry } from '@hodr/core';
 
-export { StepMetadata };
+export { StepMetadata, MetaJournalEntry };
 
 export type Origin = {
   name: string;
