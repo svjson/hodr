@@ -1,1 +1,6 @@
-export { ContextStatus, ExecutionContextParams, ExecutionContext } from './types';
+export {
+  ContextStatus,
+  EndStateStatus,
+  ExecutionContextParams,
+  ExecutionContext,
+} from './types';

@@ -8,7 +8,9 @@ import {
   HodrError,
 } from '@hodr/core';
 
-export const AxiosPlugin: HttpClientProvider = (httpClientConfig: HttpClientConfig): HttpClient => {
+export const AxiosPlugin: HttpClientProvider = (
+  httpClientConfig: HttpClientConfig
+): HttpClient => {
   return new AxiosHttpClient(axios, httpClientConfig);
 };
 
@@ -18,7 +20,10 @@ class AxiosHttpClient implements HttpClient {
     private httpClientConfig: HttpClientConfig
   ) {}
 
-  async request(ctx: ExecutionContext<any>, request: Record<string, any>): Promise<HttpResponse> {
+  async request(
+    ctx: ExecutionContext<any>,
+    request: Record<string, any>
+  ): Promise<HttpResponse> {
     try {
       const req = {
         method: request.method,
@@ -39,7 +44,7 @@ class AxiosHttpClient implements HttpClient {
       });
 
       ctx.payload = { statusCode: response.status, body: response.data } as HttpResponse;
-      ctx.currentStep.metadata.output.description = 'Hodr HTTP Response';
+      ctx.currentStep!.metadata.output.description = 'Hodr HTTP Response';
 
       if (response.request) {
         ctx.addJournalEntry({

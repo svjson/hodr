@@ -30,9 +30,7 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
       throw new HodrError(`Destination '${this.service}' has not been configured.`);
     }
 
-    const result = await service.invoke(ctx, this.path);
-
-    return result;
+    return await service.invoke(ctx, this.path);
   }
 }
 

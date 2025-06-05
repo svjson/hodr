@@ -13,7 +13,16 @@ export interface OriginId {
   variant: string;
 }
 
-export type ContextStatus = 'running' | 'finalized' | 'error';
+/**
+ * Final execution status. All executions will have one of these states when
+ * terminated, regardless of success or failure.
+ */
+export type EndStateStatus = 'finalized' | 'error';
+
+/**
+ * Current execution status. Either EndStateStatus or 'running'
+ */
+export type ContextStatus = 'running' | EndStateStatus;
 
 interface ContextFields {
   origin: OriginId;
@@ -21,7 +30,7 @@ interface ContextFields {
   /** The execution plan and its runtime state. */
   lane: Lane;
   initialStep: InitialStepExecution;
-  currentStep: StepExecution;
+  currentStep: StepExecution | null;
   finalizeStep?: FinalizeStepExecution;
 
   /** The current state of the main piece of data of an execution */
@@ -45,7 +54,9 @@ interface ContextFields {
   outputTopic?: string;
 }
 
-export interface ExecutionContextParams extends ContextFields {}
+export interface ExecutionContextParams extends ContextFields {
+  currentStep: StepExecution;
+}
 
 /**
  * Execution context of a unit of work triggered by an origin (e.g. an HTTP request).
@@ -104,4 +115,10 @@ export interface ExecutionContext<Payload> extends ContextFields {
     status?: StepStatus,
     input?: any
   ): FinalizeStepExecution;
+
+  /**
+   * Complete the finalization step of the execution and mark it as no longer
+   * executing.
+   */
+  terminate(status: EndStateStatus): void;
 }

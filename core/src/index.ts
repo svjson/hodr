@@ -3,7 +3,7 @@ export * from './types';
 
 export { Input, Origin } from './lane';
 
-export { ExecutionContext } from './context';
+export type { ContextStatus, EndStateStatus, ExecutionContext } from './context';
 
 export type { HttpClient, HttpRequest, HttpResponse } from './destination';
 

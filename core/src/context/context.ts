@@ -8,6 +8,7 @@ import type {
 import type { Lane } from '../lane';
 import type {
   ContextStatus,
+  EndStateStatus,
   ExecutionContext,
   ExecutionContextParams,
   OriginId,
@@ -21,7 +22,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
   lane: Lane;
   steps: StepExecution[] = [];
   initialStep!: InitialStepExecution;
-  currentStep!: StepExecution;
+  currentStep: StepExecution | null;
   finalizeStep?: FinalizeStepExecution | undefined;
 
   payload?: Payload;
@@ -44,7 +45,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
   }
 
   addJournalEntry(entry: MetaJournalEntry): ExecutionContext<Payload> {
-    this.currentStep.metadata.journal.push(entry);
+    this.currentStep!.metadata.journal.push(entry);
     return this;
   }
 
@@ -61,7 +62,13 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
       state: status,
       startedAt: Date.now(),
     };
-
+    this.currentStep = this.finalizeStep;
     return this.finalizeStep;
+  }
+
+  terminate(status: EndStateStatus): void {
+    this.state = status;
+    this.finalizeStep!.state = status;
+    this.currentStep = null;
   }
 }

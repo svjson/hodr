@@ -1,6 +1,7 @@
 import { Context as KoaContext, Middleware } from 'koa';
 import send from 'koa-send';
 import type {
+  EndStateStatus,
   ExecutionContext,
   HodrRoute,
   HodrRouter,
@@ -47,11 +48,7 @@ const finalizeRequest = async (
   koaContext: KoaContext,
   exCtx: ExecutionContext<any>
 ) => {
-  const finalizeStep = exCtx.beginFinalizationStep(
-    'koa-plugin-finalize',
-    'pending',
-    exCtx.payload
-  );
+  exCtx.beginFinalizationStep('koa-plugin-finalize', 'pending', exCtx.payload);
 
   if (exCtx.metadata?.payloadTypeHint === 'static-content') {
     await send(koaContext, exCtx.payload as unknown as string, {
@@ -62,12 +59,7 @@ const finalizeRequest = async (
     koaContext.body = route.finalizePayload({ ctx: exCtx, payload: exCtx.payload });
   }
 
-  exCtx.state = 'finalized';
-  exCtx.outputTopic = String(koaContext.status);
-  finalizeStep.output = koaContext.body;
-  finalizeStep.finishedAt = Date.now();
-  finalizeStep.state = 'finalized';
-  finalizeStep.metadata.output.description = 'Response Body';
+  terminateCtx(exCtx, koaContext, 'finalized');
 };
 
 /**
@@ -91,9 +83,6 @@ const encodeErrorResponse = (
   console.error(err);
   koaContext.status = 500;
 
-  exCtx.state = 'error';
-  exCtx.outputTopic = String(koaContext.status);
-
   const finalizeStep =
     exCtx.finalizeStep ?? exCtx.beginFinalizationStep('koa-plugin-finalize', 'error');
   finalizeStep.state = 'error';
@@ -110,14 +99,39 @@ const encodeErrorResponse = (
             : new HodrError(String(err), {}, 'unknown-error'),
   });
 
-  finalizeStep.output = koaContext.body;
-
-  exCtx.finalizeStep?.metadata.journal.push({
-    id: 'response-status',
-    title: 'Response Status Code',
-    entry: koaContext.status,
-  });
+  terminateCtx(exCtx, koaContext, 'error');
 };
+
+/**
+ * Add final Response metadata and close terminate the execution context.
+ *
+ * @param {ExecutionContext<any>} exCtx - The execution context to terminate.
+ * @param {KoaContext} koaCtx - The Koa context describing the request and response..
+ * @param {EndStateStatus} status - The final state of the execution context.
+ */
+const terminateCtx = (
+  exCtx: ExecutionContext<any>,
+  koaCtx: KoaContext,
+  status: EndStateStatus
+): void => {
+  exCtx.addJournalEntry({
+    id: 'head',
+    title: 'HTTP Response Head',
+    entry: {
+      statusCode: koaCtx.status,
+      headers: koaCtx.response.headers,
+    },
+  });
+
+  exCtx.outputTopic = String(koaCtx.status);
+
+  exCtx.finalizeStep!.output = koaCtx.body;
+  exCtx.finalizeStep!.finishedAt = Date.now();
+  exCtx.finalizeStep!.metadata.output.description = 'Response Body';
+
+  exCtx.terminate(status);
+};
+
 /**
  * Converts a HodrRoute to a Koa Middleware function that initializes an ExecutionContext
  * and executes the route's handler.
