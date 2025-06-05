@@ -1,6 +1,12 @@
 import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
-import { StatusCondMap, ExtractionMap, extractMap, StatusCondEntry } from '../engine';
+import {
+  StatusCondMap,
+  ExtractionMap,
+  extractMap,
+  StatusCondEntry,
+  HodrError,
+} from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { HttpStatusRange } from '../engine/validate';
 import { Hodr } from '../types';
@@ -19,6 +25,10 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
 
   async execute(ctx: ExecutionContext<HttpRequest>): Promise<HttpResponse> {
     const service = ctx.lane.root().services[this.service];
+
+    if (!service) {
+      throw new HodrError(`Destination '${this.service}' has not been configured.`);
+    }
 
     const result = await service.invoke(ctx, this.path);
 
