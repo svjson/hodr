@@ -64,30 +64,6 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  /** Register a destination invocation step */
-  invokeDestination(destination: string, path: string): LaneBuilder<any> {
-    this.lane.steps.push(new CallStep(destination, path));
-    return this;
-  }
-
-  /** Register a validation step */
-  validate(validatorObject: any): this;
-  validate(path: string, validatorObject: any): this;
-  validate(arg1: any, arg2?: any): this {
-    if (arg2 && typeof arg1 !== 'string') {
-      throw new HodrError('Invalid validator step configuration');
-    }
-    if (arg2 === undefined) {
-      this.lane.steps.push(new ValidateStep(this.root, arg1));
-    } else {
-      this.lane.steps.push(new ValidateStep(this.root, arg2, arg1));
-    }
-
-    return this;
-  }
-}
-
-export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {
   httpGet(service: string, path: string): HttpResponseLaneBuilder {
     this.lane.steps.push(new CallStep(service, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
@@ -112,7 +88,31 @@ export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {
     this.lane.steps.push(new CallStep(service, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
+
+  /** Register a destination invocation step */
+  invokeDestination(destination: string, path: string): LaneBuilder<any> {
+    this.lane.steps.push(new CallStep(destination, path));
+    return this;
+  }
+
+  /** Register a validation step */
+  validate(validatorObject: any): this;
+  validate(path: string, validatorObject: any): this;
+  validate(arg1: any, arg2?: any): this {
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new HodrError('Invalid validator step configuration');
+    }
+    if (arg2 === undefined) {
+      this.lane.steps.push(new ValidateStep(this.root, arg1));
+    } else {
+      this.lane.steps.push(new ValidateStep(this.root, arg2, arg1));
+    }
+
+    return this;
+  }
 }
+
+export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {}
 
 export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
   expectHttpOk(): HttpResponseLaneBuilder {
