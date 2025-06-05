@@ -47,7 +47,11 @@ const finalizeRequest = async (
   koaContext: KoaContext,
   exCtx: ExecutionContext<any>
 ) => {
-  const finalizeStep = exCtx.beginFinalizationStep('koa-plugin-finalize', 'pending', exCtx.payload);
+  const finalizeStep = exCtx.beginFinalizationStep(
+    'koa-plugin-finalize',
+    'pending',
+    exCtx.payload
+  );
 
   if (exCtx.metadata?.payloadTypeHint === 'static-content') {
     await send(koaContext, exCtx.payload as unknown as string, {
@@ -159,7 +163,10 @@ const buildRequest = (koaContext: KoaContext, route: HodrRoute): HttpRequest => 
  * In the context of a Koa-route, this doesn't do much an exists mostly for tracking
  * purposes.
  */
-const buildInitialStep = (koaContext: KoaContext, request: HttpRequest): InitialStepExecution => {
+const buildInitialStep = (
+  koaContext: KoaContext,
+  request: HttpRequest
+): InitialStepExecution => {
   return {
     type: 'initial',
     name: 'koa-plugin-init',

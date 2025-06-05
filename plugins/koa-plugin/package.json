@@ -18,16 +18,16 @@
   },
   "peerDependencies": {
     "@hodr/core": "",
+    "@types/koa": "^2.15.0",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa__router": "^12.0.4",
+    "@types/koa-send": "^4.1.6",
     "koa": "^2.14.2",
     "koa-send": "^5.0.1",
     "@koa/router": "^12.0.0"
   },
   "devDependencies": {
     "@hodr/core": "",
-    "@types/koa": "^2.15.0",
-    "@types/koa-bodyparser": "^4.3.12",
-    "@types/koa-send": "^4.1.6",
-    "@types/koa__router": "^12.0.4",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.1.0",
     "koa-body": "^6.0.1",
