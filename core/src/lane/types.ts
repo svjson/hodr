@@ -52,3 +52,8 @@ export type UsableType = 'tracker' | 'validator';
 export interface Usable {
   __type: UsableType;
 }
+
+export type TransformFunction<I, O> = (
+  payload: I,
+  ctx?: ExecutionContext<I>
+) => Promise<O> | O;

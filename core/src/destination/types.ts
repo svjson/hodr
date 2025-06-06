@@ -37,7 +37,7 @@ export interface HttpRequest {
   headers?: unknown;
   session?: { [key: PropertyKey]: any };
   params?: Record<string, string>;
-  body?: unknown;
+  body?: any;
 }
 
 /**

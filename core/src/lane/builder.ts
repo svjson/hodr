@@ -28,6 +28,7 @@ import type {
   HodrStep,
   HttpClientDestinationBuilderStub,
   Lane,
+  TransformFunction,
 } from './types';
 
 /**
@@ -47,9 +48,9 @@ export class LaneBuilder<Payload = any> {
   }
 
   /** Register a transform step */
-  transform<T>(fn: (ctx: ExecutionContext<Payload>) => Promise<T>): LaneBuilder<T> {
-    this.lane.steps.push(new TransformStep<Payload, T>(fn));
-    return new LaneBuilder<T>(this.root, this.lane);
+  transform<O>(fn: TransformFunction<Payload, O>): LaneBuilder<O> {
+    this.lane.steps.push(new TransformStep<Payload, O>(fn));
+    return new LaneBuilder<O>(this.root, this.lane);
   }
 
   /** Register a sequencial step */

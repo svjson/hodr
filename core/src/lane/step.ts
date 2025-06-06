@@ -3,7 +3,7 @@ import { HttpRequest, HttpResponse } from '../destination';
 import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
-import { HodrStep } from './types';
+import { HodrStep, TransformFunction } from './types';
 
 /* Step for calling a named downstream HTTP Destination */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -53,13 +53,13 @@ export class ExtractStep<I, T> implements HodrStep<I, T> {
 }
 
 /** Step for executing arbitrary transformation logic */
-export class TransformStep<I, T> implements HodrStep<I, T> {
+export class TransformStep<I, O> implements HodrStep<I, O> {
   name = 'transform';
 
-  constructor(private fn: (ctx: ExecutionContext<I>) => Promise<T>) {}
+  constructor(private fn: TransformFunction<I, O>) {}
 
-  async execute(ctx: ExecutionContext<I>): Promise<T> {
-    return await this.fn(ctx);
+  async execute(ctx: ExecutionContext<I>): Promise<O> {
+    return await this.fn(ctx.payload, ctx);
   }
 }
 

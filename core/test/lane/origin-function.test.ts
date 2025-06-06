@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { Hodr, makeHodr } from '@hodr/core';
 
 describe('Function invocation', () => {
-  it('should return the output the last transformation step', async () => {
+  it('should return the output the last step', async () => {
     const hodr: Hodr = makeHodr();
 
     hodr
       .module('orders')
       .function('calculateSum')
       .extract('items')
-      .transform((ctx) => {
-        return ctx.payload.reduce((sum: number, item: any) => {
+      .transform((payload: any) => {
+        return payload.reduce((sum: number, item: any) => {
           return sum + item.price;
         }, 0);
       });

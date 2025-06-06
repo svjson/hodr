@@ -31,15 +31,15 @@ export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
 
   api
     .get('/__inspector/api/origins/:origin/input/:input/:variant/executions')
-    .transform(async (ctx) => {
-      const input = decodeURIComponent(ctx.payload.params?.input as string);
+    .transform(async (payload) => {
+      const input = decodeURIComponent(payload.params?.input as string);
       return hodr.trackers['memory-tracker']
         .getRecorded()
         .filter(
           (recCtx) =>
-            recCtx.origin.name === ctx.payload.params?.origin &&
+            recCtx.origin.name === payload.params?.origin &&
             recCtx.origin.input === input &&
-            recCtx.origin.variant === ctx.payload.params?.variant
+            recCtx.origin.variant === payload.params?.variant
         );
     });
 
