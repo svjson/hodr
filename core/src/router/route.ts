@@ -1,5 +1,5 @@
 import { ExecutionContext } from '../context';
-import { HttpRequest } from '../destination';
+import { HttpMethod, HttpRequest } from '../destination';
 import { executeLane } from '../engine';
 import { AbstractInput, Lane } from '../lane';
 import { Hodr } from '../types';
@@ -15,7 +15,7 @@ export class HodrRoute extends AbstractInput<HttpRequest> {
   constructor(
     readonly root: () => Hodr,
     readonly router: string,
-    readonly method: string,
+    readonly method: HttpMethod,
     readonly path: string,
     public lane: Lane,
     public finalizePayload: (params: HodrRouterFinalizationParams) => any,

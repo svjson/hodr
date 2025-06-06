@@ -26,13 +26,23 @@ const matchStatus = (status: number, pattern: HttpStatusPattern): boolean => {
   return false;
 };
 
+const statusToInternal: Record<number, string> = {
+  400: 'bad-request',
+  401: 'unauthorized',
+  403: 'forbidden',
+  404: 'resource-not-found',
+  405: 'not-allowed',
+  409: 'conflict',
+  500: 'internal-error',
+};
+
 export const httpStatusMatcher = (
   ...statusPatterns: HttpStatusPattern[]
 ): HodrStep<HttpResponse, HttpResponse> => {
   return {
     name: 'validate-http-status',
     execute: (ctx: ExecutionContext<HttpResponse>): Promise<HttpResponse> => {
-      const statusCode = ctx.payload.statusCode;
+      const statusCode: number = ctx.payload.statusCode;
 
       for (const pattern of statusPatterns) {
         if (matchStatus(statusCode, pattern)) {
@@ -42,7 +52,7 @@ export const httpStatusMatcher = (
       throw new HodrError(
         `Response Status code ${statusCode} not accepted`,
         { http: { statusCode: statusCode } },
-        'http-error'
+        statusToInternal[statusCode] ?? 'internal-error'
       );
     },
   };

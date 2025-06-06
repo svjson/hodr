@@ -2,6 +2,7 @@
   "name": "@hodr/core",
   "version": "0.1.0",
   "author": "Sven Johansson",
+  "type": "module",
   "description": "Lightweight declarative orchestration engine for API flows",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -43,6 +44,6 @@
     "tsup": "^8.5.0",
     "tsx": "^4.19.4",
     "typescript": "^5.4.0",
-    "vitest": "^3.1.4"
+    "vitest": "^3.2.2"
   }
 }

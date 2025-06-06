@@ -11,6 +11,17 @@ export interface HttpClient {
   ): Promise<HttpResponse>;
 }
 
+export type HttpMethod =
+  | 'GET'
+  | 'PUT'
+  | 'POST'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS'
+  | 'CONNECT'
+  | 'TRACE';
+
 /**
  * Hodr-abstraction of the components of an HTTP request. Clearly not the full story of
  * HTTP, but will suffice for most shoveling and funneling of data between micro-services.
@@ -21,7 +32,7 @@ export interface HttpClient {
  * high-level concerns that are of interest to Hodr.
  */
 export interface HttpRequest {
-  method: string;
+  method: HttpMethod;
   uri: string;
   headers?: unknown;
   session?: { [key: PropertyKey]: any };

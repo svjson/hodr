@@ -1,3 +1,4 @@
+import { HttpMethod } from '../destination';
 import { RouterLaneBuilder } from '../lane/builder';
 import { Input } from '../lane/types';
 import { Hodr } from '../types';
@@ -58,7 +59,7 @@ export class DefaultHodrRouter implements HodrRouter {
     return this._addRoute('DELETE', path);
   }
 
-  private _addRoute(method: string, path: string): RouterLaneBuilder {
+  private _addRoute(method: HttpMethod, path: string): RouterLaneBuilder {
     const lane = { root: this.root, steps: [] };
     const route = new HodrRoute(
       this.root,

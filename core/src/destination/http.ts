@@ -5,6 +5,16 @@ import { HttpClient, HttpRequest } from './types';
 
 import { compile } from 'path-to-regexp';
 
+export const errorCodeToHttpStatus: Record<string, number> = {
+  'bad-request': 400,
+  unauthorized: 401,
+  forbidden: 403,
+  'resource-not-found': 404,
+  'not-allowed': 405,
+  conflict: 409,
+  'internal-error': 500,
+};
+
 /**
  * An extremely simplistic DestinationAdapter for outgoing HTTP.
  *

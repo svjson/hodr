@@ -8,7 +8,7 @@ import type {
   HttpRequest,
   InitialStepExecution,
 } from '@hodr/core';
-import { HodrError } from '@hodr/core';
+import { HodrError, errorCodeToHttpStatus } from '@hodr/core';
 import KoaRouter from '@koa/router';
 
 /**
@@ -62,6 +62,15 @@ const finalizeRequest = async (
   terminateCtx(exCtx, koaContext, 'finalized');
 };
 
+const toHodrError = (err: any): HodrError => {
+  return err instanceof HodrError
+    ? err
+    : err instanceof Error
+      ? new HodrError(err.message, {}, err.name)
+      : typeof err === 'string'
+        ? new HodrError(err)
+        : new HodrError(String(err), {}, 'unknown-error');
+};
 /**
  * Encodes a request failure into the HTTP response using specified route, context,
  * and execution context rules.
@@ -80,23 +89,16 @@ const encodeErrorResponse = (
   exCtx: ExecutionContext<any>,
   err: any
 ) => {
-  console.error(err);
-  koaContext.status = 500;
+  const error = toHodrError(err);
 
+  koaContext.status = errorCodeToHttpStatus[error.code] ?? 500;
   const finalizeStep =
     exCtx.finalizeStep ?? exCtx.beginFinalizationStep('koa-plugin-finalize', 'error');
   finalizeStep.state = 'error';
 
   koaContext.body = route.formatError({
     ctx: exCtx,
-    error:
-      err instanceof HodrError
-        ? err
-        : err instanceof Error
-          ? new HodrError(err.message, {}, err.name)
-          : typeof err === 'string'
-            ? new HodrError(err)
-            : new HodrError(String(err), {}, 'unknown-error'),
+    error: error,
   });
 
   terminateCtx(exCtx, koaContext, 'error');

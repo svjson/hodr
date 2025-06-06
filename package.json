@@ -10,13 +10,13 @@
   ],
   "scripts": {
     "typecheck": "npm run -ws typecheck",
-    "build": "npm run build:core && npm run build:koa-plugin && npm run build:axios-plugin && npm run build:web-inspector-plugin && npm run build:zod-plugin",
-    "build:core": "npm --workspace core run build",
-    "build:koa-plugin": "npm --workspace @hodr/koa-plugin run build",
-    "build:axios-plugin": "npm --workspace @hodr/axios-plugin run build",
-    "build:web-inspector-plugin": "npm --workspace @hodr/web-inspector-plugin run build",
-    "build:zod-plugin": "npm --workspace @hodr/zod-plugin run build",
-    "test": "npm --workspace @hodr/core run test && npm --workspace @hodr/zod-plugin run test",
+    "build": "npm run --ws build",
+    "build:core": "npm --w core run build",
+    "build:koa-plugin": "npm --w @hodr/koa-plugin run build",
+    "build:axios-plugin": "npm --w @hodr/axios-plugin run build",
+    "build:web-inspector-plugin": "npm --w @hodr/web-inspector-plugin run build",
+    "build:zod-plugin": "npm --w @hodr/zod-plugin run build",
+    "test": "npm --ws run test --if-present",
     "format": "prettier --write ."
   },
   "devDependencies": {
