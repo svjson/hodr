@@ -326,7 +326,7 @@ That's final! (*badum-tish*)
 
 ### "What if this doesn't cover all of my needs?"
 
-Ah. Heaven and earth, Horatio, hilosophy and all that jazz. Well, Hodr is no stranger to 
+Ah. Heaven and earth, Horatio, philosophy and all that jazz. Well, Hodr is no stranger to 
 philosophy. Once he even philosomophized so hard that an egg materialized out of thin air 
 and laid a hen at his feet. True story.
 
