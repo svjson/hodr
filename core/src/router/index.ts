@@ -1,2 +1,2 @@
 export type { HodrRouter } from './types';
-export { HodrRoute } from './route';
+export { HodrRoute, RouteRequestAdapter } from './route';

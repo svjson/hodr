@@ -3,14 +3,13 @@ import type {
   InitialStepExecution,
   MetaJournalEntry,
   StepExecution,
-  StepStatus,
 } from '../engine';
 import type { Lane } from '../lane';
 import type {
   ContextStatus,
-  EndStateStatus,
   ExecutionContext,
   ExecutionContextParams,
+  FinalizeParams,
   OriginId,
 } from './types';
 
@@ -49,26 +48,30 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
     return this;
   }
 
-  beginFinalizationStep(
-    stepName: string,
-    status: StepStatus = 'pending',
-    input?: any
-  ): FinalizeStepExecution {
+  beginFinalizationStep(params: FinalizeParams): FinalizeStepExecution {
     this.finalizeStep = {
       type: 'finalize',
-      name: stepName,
-      input: input,
-      metadata: { input: {}, journal: [], output: {} },
-      state: status,
+      name: params.name,
+      input: params.input,
+      metadata: {
+        input: { ...params.metadata?.input },
+        journal: params.metadata?.journal ?? [],
+        output: { ...params.metadata?.output },
+      },
+      state: params.status,
       startedAt: Date.now(),
     };
-    this.currentStep = this.finalizeStep;
-    return this.finalizeStep;
+    this.currentStep = this.finalizeStep!;
+    return this.finalizeStep!;
   }
 
-  terminate(status: EndStateStatus): void {
-    this.state = status;
-    this.finalizeStep!.state = status;
+  terminate(): void {
+    if (this.finalizeStep!.state === 'pending') {
+      this.finalizeStep!.state = 'finalized';
+    }
+    this.state = this.finalizeStep!.state;
+
+    this.finalizeStep!.finishedAt = Date.now();
     this.currentStep = null;
   }
 }

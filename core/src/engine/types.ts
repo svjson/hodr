@@ -78,6 +78,16 @@ export class HodrError extends Error {
     super(message);
     this.name = 'HodrError';
   }
+
+  static fromThrown(err: any) {
+    return err instanceof HodrError
+      ? err
+      : err instanceof Error
+        ? new HodrError(err.message, {}, err.name)
+        : typeof err === 'string'
+          ? new HodrError(err)
+          : new HodrError(String(err), {}, 'internal-error');
+  }
 }
 
 /**

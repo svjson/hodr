@@ -58,6 +58,13 @@ export interface ExecutionContextParams extends ContextFields {
   currentStep: StepExecution;
 }
 
+export interface FinalizeParams {
+  name: string;
+  status: StepStatus;
+  input?: any;
+  metadata?: Record<string, any>;
+}
+
 /**
  * Execution context of a unit of work triggered by an origin (e.g. an HTTP request).
  *
@@ -116,21 +123,18 @@ export interface ExecutionContext<Payload> extends ContextFields {
    * Sets the `finalizationStep` property on this context instance, and assigns
    * it to `currentStep`.
    *
-   * @param stepName - Name to assign to the finalization step
+   * @param name - Name to assign to the finalization step
    * @param status - Defaults to 'pending'
    * @param input - Finalization step input
+   * @param metada - step metadata
    *
    * @returns The created finalization step.
    */
-  beginFinalizationStep(
-    stepName: string,
-    status?: StepStatus,
-    input?: any
-  ): FinalizeStepExecution;
+  beginFinalizationStep(stepData: FinalizeParams): FinalizeStepExecution;
 
   /**
    * Complete the finalization step of the execution and mark it as no longer
    * executing.
    */
-  terminate(status: EndStateStatus): void;
+  terminate(): void;
 }

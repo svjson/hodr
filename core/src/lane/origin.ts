@@ -100,13 +100,22 @@ export class FunctionInput extends AbstractInput<any> {
 
   async invoke<T = unknown, R = unknown>(arg: T): Promise<R> {
     const ctx: ExecutionContext<T> = this.newExecution(arg, this.buildInitialStep(arg));
+    let thrown: any = null;
     try {
       await executeLane(this.root, ctx);
-      ctx.beginFinalizationStep('function-finalize');
-      ctx.terminate('finalized');
     } catch (e) {
-      ctx.terminate('error');
-      throw e;
+      thrown = e;
+    }
+
+    ctx.beginFinalizationStep({
+      name: 'function-finalize',
+      status: thrown ? 'error' : 'finalized',
+      input: thrown ? HodrError.fromThrown(thrown) : ctx.payload,
+    });
+    ctx.terminate();
+
+    if (thrown) {
+      throw thrown;
     }
 
     return ctx.payload;
