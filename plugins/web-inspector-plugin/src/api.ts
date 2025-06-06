@@ -2,7 +2,7 @@ import type { Hodr, HodrRouter } from '@hodr/core';
 import path from 'path';
 
 export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
-  hodr.service('__inspector/static').fileSystem(path.resolve(__dirname, 'static'));
+  hodr.destination('__inspector/static').fileSystem(path.resolve(__dirname, 'static'));
 
   const api = hodr.router('__inspector');
 

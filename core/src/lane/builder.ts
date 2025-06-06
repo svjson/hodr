@@ -64,28 +64,28 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  httpGet(service: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(service, path));
+  httpGet(destination: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(destination, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
-  httpPost(service: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(service, path));
+  httpPost(destination: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(destination, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
-  httpPut(service: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(service, path));
+  httpPut(destination: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(destination, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
-  httpPatch(service: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(service, path));
+  httpPatch(destination: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(destination, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
-  httpDelete(service: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(service, path));
+  httpDelete(destination: string, path: string): HttpResponseLaneBuilder {
+    this.lane.steps.push(new CallStep(destination, path));
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
@@ -144,32 +144,32 @@ export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
 export class HodrDestinationBuilder implements DestinationBuilder {
   constructor(
     private root: () => Hodr,
-    private service: HodrDestination
+    private destination: HodrDestination
   ) {}
 
   httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilderStub {
     return new HodrHttpClientDestinationBuilderStub(
       this.root,
-      this.service,
+      this.destination,
       httpClientConfig
     );
   }
 
   fileSystem(root: string): void {
-    this.service.adapter = new FileSystemDestinationAdapter(root);
+    this.destination.adapter = new FileSystemDestinationAdapter(root);
   }
 }
 
 class HodrHttpClientDestinationBuilderStub implements HttpClientDestinationBuilderStub {
   constructor(
     private root: () => Hodr,
-    private service: HodrDestination,
+    private destination: HodrDestination,
     private httpClientConfig: HttpClientConfig
   ) {}
 
   using(client: HttpClientProvider): void {
     const clientInstance: HttpClient = client(this.httpClientConfig);
-    this.service.adapter = new DefaultHttpClientDestinationAdapter(
+    this.destination.adapter = new DefaultHttpClientDestinationAdapter(
       this.root,
       clientInstance
     );

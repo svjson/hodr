@@ -7,7 +7,7 @@ import { HodrRouter } from './router';
 /*
  * The base Hodr object for interaction and configuration in client code.
  *
- * Keeps a registry of services/targets that can be invoked.
+ * Keeps a registry of destinations/targets that can be invoked.
  *
  * FIXME: Because of the registry nature of this central but - once configured -
  * fairly hidden type, it is somewhat of a coupling magnet.
@@ -18,12 +18,12 @@ import { HodrRouter } from './router';
 export interface Hodr {
   origins: Record<string, Origin>;
   trackers: Record<string, Tracker>;
-  services: Record<string, Destination>;
+  destinations: Record<string, Destination>;
   validators: Validator[];
 
   module(name: string): ModuleOrigin;
   function(name: string): LaneBuilder;
-  service(name: string): DestinationBuilder;
+  destination(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 
   use(feature: Usable): Hodr;

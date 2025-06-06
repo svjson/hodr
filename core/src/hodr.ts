@@ -9,7 +9,7 @@ import type { Hodr as HodrInterface } from './types';
 
 class Hodr implements HodrInterface {
   origins: Record<string, Origin> = {};
-  services: Record<string, Destination> = {};
+  destinations: Record<string, Destination> = {};
   trackers: Record<string, Tracker> = {};
   validators: Validator[] = [];
 
@@ -32,10 +32,10 @@ class Hodr implements HodrInterface {
     return router;
   }
 
-  service(name: string): DestinationBuilder {
-    const service = new HodrDestination(() => this, name);
-    this.services[name] = service;
-    return new HodrDestinationBuilder(() => this, service);
+  destination(name: string): DestinationBuilder {
+    const destination = new HodrDestination(() => this, name);
+    this.destinations[name] = destination;
+    return new HodrDestinationBuilder(() => this, destination);
   }
 
   use(feature: Usable): Hodr {

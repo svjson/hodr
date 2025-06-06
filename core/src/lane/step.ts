@@ -5,25 +5,25 @@ import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
 import { HodrStep } from './types';
 
-/* Step for calling a named downstream service */
+/* Step for calling a named downstream HTTP Destination */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
   name = 'call';
 
   constructor(
-    private service: string,
+    private destination: string,
     private path: string
   ) {
-    this.name = `http-req-${service}`;
+    this.name = `http-req-${destination}`;
   }
 
   async execute(ctx: ExecutionContext<HttpRequest>): Promise<HttpResponse> {
-    const service = ctx.lane.root().services[this.service];
+    const destination = ctx.lane.root().destinations[this.destination];
 
-    if (!service) {
-      throw new HodrError(`Destination '${this.service}' has not been configured.`);
+    if (!destination) {
+      throw new HodrError(`Destination '${this.destination}' has not been configured.`);
     }
 
-    return await service.invoke(ctx, this.path);
+    return await destination.invoke(ctx, this.path);
   }
 }
 
