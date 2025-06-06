@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitest/config';
-import path from 'path';
 
 export default defineConfig({
   root: '.',
@@ -10,7 +9,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@hodr/zod-plugin': path.resolve(__dirname, '.'),
+      '@hodr/core': new URL('../../core/src', import.meta.url).pathname,
+      '@hodr/zod-plugin': new URL('./src', import.meta.url).pathname,
     },
   },
 });

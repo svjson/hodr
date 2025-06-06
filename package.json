@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "author": "Sven Johansson",
+  "type": "module",
   "description": "A framework for building and routing modular service interactions with verified, transformable contracts between steps.",
   "workspaces": [
     "core",
@@ -21,6 +22,8 @@
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.2",
+    "@vitest/ui": "^3.2.2"
   }
 }
