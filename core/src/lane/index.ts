@@ -15,3 +15,5 @@ export type {
   Usable,
   UsableType,
 } from './types';
+
+export { AbstractInput, FunctionInput, ModuleOrigin } from './origin';

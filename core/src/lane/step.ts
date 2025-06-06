@@ -1,18 +1,11 @@
 import { ExecutionContext } from '../context';
 import { HttpRequest, HttpResponse } from '../destination';
-import {
-  StatusCondMap,
-  ExtractionMap,
-  extractMap,
-  StatusCondEntry,
-  HodrError,
-} from '../engine';
+import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
 import { mapStatusCode } from '../engine/transform';
-import { HttpStatusRange } from '../engine/validate';
 import { Hodr } from '../types';
 import { HodrStep } from './types';
 
-// Step for calling a named downstream service
+/* Step for calling a named downstream service */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
   name = 'call';
 

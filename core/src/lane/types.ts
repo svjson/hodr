@@ -21,6 +21,8 @@ export interface Origin {
 export interface Input<T> {
   name: string;
   type: string;
+  lane: Lane;
+
   variant(): string;
 
   newExecution(

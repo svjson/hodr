@@ -1,5 +1,7 @@
+import { ExecutionContext } from './context';
 import { Tracker, Validator } from './engine';
-import { Destination, DestinationBuilder, Origin, Usable } from './lane';
+import { Destination, DestinationBuilder, ModuleOrigin, Origin, Usable } from './lane';
+import { LaneBuilder } from './lane/builder';
 import { HodrRouter } from './router';
 
 /*
@@ -19,8 +21,12 @@ export interface Hodr {
   services: Record<string, Destination>;
   validators: Validator[];
 
+  module(name: string): ModuleOrigin;
+  function(name: string): LaneBuilder;
   service(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 
   use(feature: Usable): Hodr;
+
+  record(ctx: ExecutionContext<any>): void;
 }

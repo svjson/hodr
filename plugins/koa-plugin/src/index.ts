@@ -146,7 +146,6 @@ const toMiddleware = (route: HodrRoute): Middleware => {
     });
     exCtx.inputTopic = koaCtx.request.url;
 
-    route.record(exCtx);
     exCtx.initialStep.state = 'finalized';
 
     try {

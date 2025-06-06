@@ -109,6 +109,18 @@ export interface ExecutionContext<Payload> extends ContextFields {
 
   /**
    * Enter the finalization step of the execution.
+   *
+   * This is called by the origin or other terminator of the execution and
+   * marks the beginning of the finalization phase.
+   *
+   * Sets the `finalizationStep` property on this context instance, and assigns
+   * it to `currentStep`.
+   *
+   * @param stepName - Name to assign to the finalization step
+   * @param status - Defaults to 'pending'
+   * @param input - Finalization step input
+   *
+   * @returns The created finalization step.
    */
   beginFinalizationStep(
     stepName: string,

@@ -5,6 +5,7 @@
  * Well, "engine" might be a bit pompous at this point. It's a collection of types
  * and snippets that does... things, alright?
  */
+export { executeLane } from './execution';
 export { memoryTracker } from './tracker';
 export { extractMap, extractPath, mapStatusCode } from './transform';
 export { type HttpStatusPattern, httpStatusMatcher } from './validate';
