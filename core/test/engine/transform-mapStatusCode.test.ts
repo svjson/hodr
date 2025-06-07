@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { mapStatusCode, StatusCondMap } from '@hodr/core';
+import { mapStatusCode } from '@hodr/core';
+import type { HttpStatusPattern, StatusCondMap } from '@hodr/core';
 
 describe('mapStatusCode()', () => {
   it('should return input statusCode on no matching clause', () => {

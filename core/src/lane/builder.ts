@@ -48,8 +48,13 @@ export class LaneBuilder<Payload = any> {
   }
 
   /** Register a transform step */
-  transform<O>(fn: TransformFunction<Payload, O>): LaneBuilder<O> {
-    this.lane.steps.push(new TransformStep<Payload, O>(fn));
+  transform<O>(fn: TransformFunction<Payload, O>): LaneBuilder<O>;
+  transform<I, O>(path: string, fn: TransformFunction<Payload, O>): LaneBuilder<O>;
+  transform<O>(
+    arg1: TransformFunction<Payload, O> | string,
+    arg2?: TransformFunction<Payload, O>
+  ): LaneBuilder<O> {
+    this.lane.steps.push(new TransformStep<Payload, O>(arg1, arg2));
     return new LaneBuilder<O>(this.root, this.lane);
   }
 

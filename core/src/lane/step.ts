@@ -55,10 +55,28 @@ export class ExtractStep<I, T> implements HodrStep<I, T> {
 /** Step for executing arbitrary transformation logic */
 export class TransformStep<I, O> implements HodrStep<I, O> {
   name = 'transform';
+  path?: string;
+  fn: TransformFunction<I, O>;
 
-  constructor(private fn: TransformFunction<I, O>) {}
+  constructor(arg1: string | TransformFunction<I, O>, arg2?: TransformFunction<I, O>) {
+    if (typeof arg1 == 'function' && arg2 == undefined) {
+      this.fn = arg1;
+    } else if (typeof arg1 == 'string' && typeof arg2 == 'function') {
+      this.path = arg1;
+      this.fn = arg2;
+    } else {
+      throw new HodrError('Invalid transform step configuration.');
+    }
+  }
 
   async execute(ctx: ExecutionContext<I>): Promise<O> {
+    if (this.path) {
+      return {
+        ...ctx.payload,
+        [this.path]: await this.fn(ctx.payload, ctx),
+      };
+    }
+
     return await this.fn(ctx.payload, ctx);
   }
 }

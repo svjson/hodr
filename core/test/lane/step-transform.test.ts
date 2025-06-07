@@ -155,4 +155,40 @@ describe('TransformStep', () => {
       },
     });
   });
+
+  it('may be given a path/fieldname to transform', async () => {
+    // Given
+    const ctx = makeDummyContext<any>({
+      payload: {
+        threadId: { targetType: 'location', targetId: '384' },
+        account: { id: 1234, name: 'Tarzan' },
+        comment: {
+          type: 'warning',
+          comment: 'Beware! Bear-infested area!',
+        },
+      },
+    });
+
+    const step = new TransformStep<any, any>('comment', ({ comment, account }) => ({
+      authorId: account.id,
+      authorName: account.name,
+      ...comment,
+    }));
+
+    // When
+    console.log(ctx.payload);
+    const result = await step.execute(ctx);
+
+    // Then
+    expect(result).toEqual({
+      threadId: { targetType: 'location', targetId: '384' },
+      account: { id: 1234, name: 'Tarzan' },
+      comment: {
+        authorId: 1234,
+        authorName: 'Tarzan',
+        type: 'warning',
+        comment: 'Beware! Bear-infested area!',
+      },
+    });
+  });
 });
