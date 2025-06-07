@@ -251,8 +251,8 @@ _ // ...
   })
   .mapStatusCode([
     [404, 200], // The word on the streets is that 404 is the new 200!
-    [[400, 417]: 418], // Everything's a teapot! Except 404, which takes precedence because more specific.
-    [[501, 511]: 500] // The client doesn't need to know that we're out of storage or that a variant also negotiates(whatever that means).
+    [[400, 417], 418], // Everything's a teapot! Except 404, which takes precedence because more specific.
+    [[501, 511], 500] // The client doesn't need to know that we're out of storage or that a variant also negotiates(whatever that means).
   ])
 
   // ...
@@ -503,7 +503,7 @@ immediately on its own lane. The rest should refer to and delegate to re-usable 
 
 ```ts
   leasingService.target('update-listing-status')
-    .put('/listings/:listingId/status')
+    .httpPut('/listings/:listingId/status')
     .mapStatusCode([
       [404, (step) => {
         step.error({statusCode: 404, code: 'not-found', message: 'Listing does not exist.' })
