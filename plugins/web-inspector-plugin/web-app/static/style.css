@@ -30,8 +30,8 @@
 }
 
 html {
-      scrollbar-gutter: stable;
-    }
+  scrollbar-gutter: stable;
+}
 
 body {
   background: var(--bg);
@@ -150,6 +150,21 @@ button:hover {
 
 
 /* <layout> */
+
+.page-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0px 8px;
+}
+
+#application-name {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  display: inline-flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
 
 .container {
   max-width: 1300px;

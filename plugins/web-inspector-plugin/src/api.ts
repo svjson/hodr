@@ -11,7 +11,12 @@ export function makeHodrWebInspector(hodr: Hodr): HodrRouter[] {
     .extract('params.path')
     .invokeDestination('__inspector/static', ':path');
 
-  api.get('/__inspector/api/origins').transform(async (_) => {
+  api.get('/__inspector/api/application').literal({
+    appId: hodr.appId,
+    appName: hodr.appName,
+  });
+
+  api.get('/__inspector/api/origins').transform((_) => {
     return Object.values(hodr.origins)
       .filter((o) => o.name !== '__inspector')
       .map((o) => {

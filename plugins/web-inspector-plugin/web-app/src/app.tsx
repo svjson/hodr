@@ -5,13 +5,14 @@ import 'pretty-json-custom-element';
 import { Execution } from './components/Execution';
 import { toggleExpandable } from './components/Expandable';
 import './components/Collapsible';
-import { Origin, HodrContext } from './model';
+import { Origin, ExecutionContext } from './model';
 
 const App = () => {
   const el = (
     <div class="container">
-      <h1>
+      <h1 class="page-title-bar">
         <code>Hodr Inspector</code>
+        <code id="application-name"></code>
       </h1>
       <div>
         <div id="lane-list">Loading lanes...</div>
@@ -24,9 +25,9 @@ const App = () => {
       uri: (item) =>
         `origins/${item.origin}/input/${encodeURIComponent(item.input)}/${item.variant}/executions`,
 
-      renderList: (items) => (
+      renderList: (items: ExecutionContext<any>[]) => (
         <div class="list-block">
-          {items.map((ctx: HodrContext) => (
+          {items.map((ctx) => (
             <Execution ctx={ctx} />
           ))}
         </div>
@@ -61,6 +62,16 @@ const App = () => {
       content!
     );
   };
+
+  queueMicrotask(async () => {
+    const res = await fetch('/__inspector/api/application');
+    const data = await res.json();
+
+    const title = data.appName ?? data.appId;
+    if (title) {
+      (document.querySelector('#application-name')! as HTMLElement).innerText = title;
+    }
+  });
 
   queueMicrotask(async () => {
     const res = await fetch('/__inspector/api/origins');

@@ -5,13 +5,21 @@ import { HodrDestinationBuilder, LaneBuilder } from './lane/builder';
 import { HodrDestination } from './lane/destination';
 import { HodrRouter } from './router';
 import { DefaultHodrRouter } from './router/router';
-import type { Hodr as HodrInterface } from './types';
+import type { Hodr as HodrInterface, HodrOptions } from './types';
 
 class Hodr implements HodrInterface {
+  appId: string;
+  appName: string;
+
   origins: Record<string, Origin> = {};
   destinations: Record<string, Destination> = {};
   trackers: Record<string, Tracker> = {};
   validators: Validator[] = [];
+
+  constructor(opts?: HodrOptions) {
+    this.appId = opts?.appId ?? 'hodr-app';
+    this.appName = opts?.appName ?? 'Hodr Application';
+  }
 
   module(name: string): ModuleOrigin {
     if (this.origins[name]) {
@@ -57,6 +65,6 @@ class Hodr implements HodrInterface {
   }
 }
 
-export function makeHodr() {
-  return new Hodr();
+export function makeHodr(opts?: HodrOptions) {
+  return new Hodr(opts);
 }

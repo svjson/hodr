@@ -107,6 +107,16 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
+  literal<T = any>(value: T): this {
+    this.lane.steps.push({
+      name: 'literal',
+      async execute(_ctx: ExecutionContext<any>): Promise<T> {
+        return value;
+      },
+    });
+    return this;
+  }
+
   /** Register a sequential step */
   sequence(steps: HodrStep[]): this {
     this.lane.steps.push(new SequenceStep(steps));

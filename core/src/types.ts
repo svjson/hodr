@@ -16,6 +16,9 @@ import { HodrRouter } from './router';
  * let the Hodr-interface stay out of sight after app-configuration is done.
  */
 export interface Hodr {
+  appId: string;
+  appName: string;
+
   origins: Record<string, Origin>;
   trackers: Record<string, Tracker>;
   destinations: Record<string, Destination>;
@@ -29,4 +32,9 @@ export interface Hodr {
   use(feature: Usable): Hodr;
 
   record(ctx: ExecutionContext<any>): void;
+}
+
+export interface HodrOptions {
+  appId?: string;
+  appName?: string;
 }
