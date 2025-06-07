@@ -1,5 +1,11 @@
 import { ExecutionContext } from '../context';
-import { HttpRequest, HttpResponse, RequestParameters } from '../destination';
+import {
+  type HttpRequest,
+  type HttpResponse,
+  type HttpStatusCode,
+  type RequestParameters,
+  httpStatusToInternal,
+} from '../destination';
 import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
@@ -165,7 +171,17 @@ export class MapStatusCodeStep implements HodrStep<HttpResponse, HttpResponse> {
   constructor(private statusMap: StatusCondMap) {}
 
   async execute(ctx: ExecutionContext<HttpResponse>): Promise<HttpResponse> {
-    ctx.payload!.statusCode = mapStatusCode(ctx.payload!.statusCode, this.statusMap);
+    const statusCode = mapStatusCode(ctx.payload!.statusCode, this.statusMap);
+    ctx.payload!.statusCode = statusCode;
+
+    if (ctx.payload?.statusCode >= 200 && ctx.payload?.statusCode < 300) {
+      ctx.metadata.canonicalStatus = {
+        code: httpStatusToInternal[statusCode as HttpStatusCode],
+        httpStatus: statusCode,
+        inferredFrom: 'http-status-remap',
+        inferredBy: ctx.currentStep?.name,
+      };
+    }
 
     return ctx.payload!;
   }

@@ -38,6 +38,77 @@ export interface Destination<T = any, Params = unknown> {
   invoke(ctx: ExecutionContext<T>, path: string, params: Params): Promise<any>;
 }
 
+export type InternalStatusSuccessCode =
+  | 'ok'
+  | 'created'
+  | 'accepted'
+  | 'non-authorative'
+  | 'no-content'
+  | 'reset-content'
+  | 'partial-content'
+  | 'multi-status'
+  | 'already-reported'
+  | 'im-used';
+
+export type InternalStatusClientErrorCode =
+  | 'bad-request'
+  | 'unauthorized'
+  | 'payment-required'
+  | 'forbidden'
+  | 'resource-not-found'
+  | 'not-allowed'
+  | 'not-acceptable'
+  | 'proxy-authentication-required'
+  | 'request-timeout'
+  | 'conflict'
+  | 'gone'
+  | 'length-required'
+  | 'precondition-failed'
+  | 'payload-too-large'
+  | 'uri-too-long'
+  | 'unsupported-media-type'
+  | 'range-not-satisfiable'
+  | 'expectation-failed'
+  | 'i-am-a-teapot'
+  | 'misdirected-request'
+  | 'unprocessable-entity'
+  | 'locked'
+  | 'failed-dependency'
+  | 'too-early'
+  | 'upgrade-required'
+  | 'precondition-required'
+  | 'too-many-requests'
+  | 'request-header-fields-too-large'
+  | 'unavailable-for-legal-reasons';
+
+export type InternalStatusServerErrorCode =
+  | 'internal-error'
+  | 'not-implemented'
+  | 'bad-gateway'
+  | 'service-unavailable'
+  | 'gateway-timeout'
+  | 'http-version-not-supported'
+  | 'variant-also-negotiates'
+  | 'insufficient-storage'
+  | 'loop-detected'
+  | 'not-extended'
+  | 'network-authentication-required';
+
+export type InternalStatusErrorCode =
+  | InternalStatusClientErrorCode
+  | InternalStatusServerErrorCode;
+
+export type InternalStatusCode =
+  | 'continue'
+  | 'switching-protocol'
+  | InternalStatusSuccessCode
+  | 'multiple-choices'
+  | 'moved-permanently'
+  | 'found'
+  | 'not-modified'
+  | InternalStatusClientErrorCode
+  | InternalStatusServerErrorCode;
+
 export interface DestinationBuilder {
   httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilderStub;
   fileSystem(root: string): void;

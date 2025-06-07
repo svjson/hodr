@@ -10,8 +10,17 @@ export type {
   HttpMethod,
   HttpRequest,
   HttpResponse,
+  HttpStatusCode,
+  HttpStatusErrorCode,
   RequestParameters,
 } from './types';
 export { FileSystemDestinationAdapter } from './fs';
 
-export { DefaultHttpClientDestinationAdapter, errorCodeToHttpStatus } from './http';
+export {
+  DefaultHttpClientDestinationAdapter,
+  errorCodeToHttpStatus,
+  httpErrorStatusToInternal,
+  httpStatusToInternal,
+  internalStatusToHttpStatus,
+  resolveCanonicalHttpStatus,
+} from './http';

@@ -4,8 +4,10 @@ import {
   type HttpClient,
   type HttpClientConfig,
   type HttpResponse,
+  type HttpStatusErrorCode,
   type HttpClientProvider,
   HodrError,
+  httpErrorStatusToInternal,
 } from '@hodr/core';
 
 export const AxiosPlugin: HttpClientProvider = (
@@ -62,9 +64,9 @@ class AxiosHttpClient implements HttpClient {
         throw new HodrError(
           err.message,
           { http: { statusCode: err.code } },
-          err.name,
+          httpErrorStatusToInternal[err.status as HttpStatusErrorCode] ?? 'internal-error',
           err.config,
-          err.cause
+          err
         );
       } else {
         throw new HodrError(String(err));

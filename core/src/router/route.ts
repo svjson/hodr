@@ -5,6 +5,7 @@ import {
   HttpRequest,
   HttpResponse,
 } from '../destination';
+import { resolveCanonicalHttpStatus } from '../destination';
 import { executeLane, HodrError, InitialStepExecution, StepMetadata } from '../engine';
 import { AbstractInput, Lane } from '../lane';
 import { Hodr } from '../types';
@@ -109,7 +110,9 @@ export class HodrRoute extends AbstractInput<HttpRequest> {
     });
 
     const response: HttpResponse = {
-      statusCode: error ? (errorCodeToHttpStatus[error.code] ?? 500) : 200,
+      statusCode: error
+        ? (errorCodeToHttpStatus[error.code] ?? 500)
+        : resolveCanonicalHttpStatus(exCtx, 200),
       body: {},
     };
 

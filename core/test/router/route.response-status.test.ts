@@ -132,4 +132,39 @@ describe('Route Response Status Propagation', () => {
 
     expect(testCtx.response!.statusCode).toBe(500);
   });
+
+  it('should propagate a successful 201 Created on a successful response', async () => {
+    // Given  //
+    const { router } = setupTestDestination({
+      '/begin-the-story-of-creation': {
+        POST: {
+          statusCode: 201,
+          body: {
+            beginning: 'light',
+          },
+        },
+      },
+    });
+
+    router
+      .post('/create')
+      .httpPost('test-destination', '/begin-the-story-of-creation')
+      .expectHttpSuccess()
+      .extractResponseBody('content');
+
+    // When  //
+
+    const testCtx = makeRequestContext({
+      uri: '/begin-the-story-of-creation',
+      body: {
+        type: 'the world',
+      },
+    });
+
+    await router.routes[0].handleRequest(testCtx, testRouteAdapter);
+
+    // Then  //
+
+    expect(testCtx.response!.statusCode).toBe(201);
+  });
 });

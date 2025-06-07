@@ -9,6 +9,7 @@ import type {
   StepMetadata,
 } from '@hodr/core';
 import KoaRouter from '@koa/router';
+import { HttpStatusCode } from '@hodr/core/src/destination';
 
 /**
  * Mounts all routes from a HodrRouter instance into a Koa Router.
@@ -96,7 +97,7 @@ const koaRequestAdapter: RouteRequestAdapter<KoaContext> = {
       ctx.status = response.statusCode;
       ctx.body = response.body;
     }
-    response.statusCode = ctx.status;
+    response.statusCode = ctx.status as HttpStatusCode;
     response.headers = ctx.response.headers;
   },
 };

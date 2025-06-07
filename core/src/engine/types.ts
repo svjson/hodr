@@ -1,6 +1,6 @@
 import { ExecutionContext } from '../context';
 import { HttpClient, RequestParameters } from '../destination';
-import { Usable } from '../lane/types';
+import { InternalStatusErrorCode, Usable } from '../lane/types';
 import { HttpStatusPattern } from './validate';
 
 /**
@@ -71,7 +71,7 @@ export class HodrError extends Error {
   constructor(
     message: string,
     public readonly contextual: Record<string, any> = {},
-    public readonly code: string = 'internal-error',
+    public readonly code: InternalStatusErrorCode = 'internal-error',
     public readonly detail?: any,
     public readonly cause?: unknown
   ) {
@@ -83,7 +83,7 @@ export class HodrError extends Error {
     return err instanceof HodrError
       ? err
       : err instanceof Error
-        ? new HodrError(err.message, {}, err.name)
+        ? new HodrError(err.message, {}, 'internal-error', err.name)
         : typeof err === 'string'
           ? new HodrError(err)
           : new HodrError(String(err), {}, 'internal-error');

@@ -7,9 +7,11 @@ export type {
   HttpMethod,
   HttpRequest,
   HttpResponse,
+  HttpStatusCode,
+  HttpStatusErrorCode,
   RequestParameters,
 } from './destination';
-export { errorCodeToHttpStatus } from './destination';
+export { errorCodeToHttpStatus, httpErrorStatusToInternal } from './destination';
 export { executeLane, extractMap, extractPath, mapStatusCode } from './engine';
 export type {
   FinalizeStepExecution,
