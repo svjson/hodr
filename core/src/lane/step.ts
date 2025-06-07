@@ -93,12 +93,38 @@ export class ValidateStep<T> implements HodrStep<T, T> {
   ) {}
 
   async execute(ctx: ExecutionContext<T>): Promise<T> {
-    for (const validator of this.root().validators) {
-      if (validator.canValidate(this.validatorObject)) {
-        return validator.validate(ctx, this.validatorObject, this.targetPath);
+    try {
+      if (typeof this.validatorObject === 'function') {
+        return this.validatorObject(ctx.payload);
       }
+
+      for (const validator of this.root().validators) {
+        if (validator.canValidate(this.validatorObject)) {
+          return validator.validate(ctx, this.validatorObject, this.targetPath);
+        }
+      }
+      return ctx.payload;
+    } catch (e) {
+      /**
+       * TODO: We need to keep contextual information about the current payload, for
+       * various reasons, but in this case - 'bad-request' (which will translate to 400
+       * for http requests) are valid when validating incoming data, but if validation
+       * occurs on payload clearly fetched via http or from a database or whatnot, it's
+       * something else - an internal error probably. This is important to enforce error
+       * semantics in a away that makes sense:
+       *
+       * "The system should be as predictable in failure as it is in success."
+       *   - Confucius
+       */
+      const error = HodrError.fromThrown(e);
+      throw new HodrError(
+        error.message,
+        error.contextual,
+        'bad-request',
+        error.detail,
+        error.cause ?? error.code
+      );
     }
-    return ctx.payload;
   }
 }
 

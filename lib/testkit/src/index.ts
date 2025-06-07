@@ -11,3 +11,5 @@ export {
 } from './test-route-adapter';
 
 export { dumpLastExecution } from './tracing';
+
+export { AlwaysFailValidator, AlwaysPassValidator } from './test-validators';

@@ -6,34 +6,40 @@ import {
   testRouteAdapter,
 } from '@hodr/testkit';
 
+const setupTestDestination = () => {
+  const hodr = makeHodr();
+  hodr.use(memoryTracker({ limit: 10 }));
+
+  const router = hodr.router('test-router');
+
+  hodr
+    .destination('test-destination')
+    .httpClient({})
+    .using(
+      makeFakeHttpClientPlugin({
+        '/comments/listing/thread/5': {
+          POST: (req: HttpRequest) => ({
+            statusCode: 201,
+            body: {
+              content: {
+                ...req.body,
+                id: 558,
+                createdAt: 1749246021270,
+              },
+              _links: { self: 'http://www.hatsofmeat.com' },
+            },
+          }),
+        },
+      })
+    );
+
+  return { router, hodr };
+};
+
 describe('Route Execution', () => {
   it('uses body, session, and params to construct a POST request, sends it to the remote, and maps the response back to the client', async () => {
     // Given  //
-    const hodr = makeHodr();
-    hodr.use(memoryTracker({ limit: 10 }));
-
-    const router = hodr.router('test-router');
-
-    hodr
-      .destination('test-destination')
-      .httpClient({})
-      .using(
-        makeFakeHttpClientPlugin({
-          '/comments/listing/thread/5': {
-            POST: (req: HttpRequest) => ({
-              statusCode: 201,
-              body: {
-                content: {
-                  ...req.body,
-                  id: 558,
-                  createdAt: 1749246021270,
-                },
-                _links: { self: 'http://www.hatsofmeat.com' },
-              },
-            }),
-          },
-        })
-      );
+    const { router } = setupTestDestination();
 
     router
       .post('/comments/:targetType/thread/:targetId')
@@ -42,7 +48,7 @@ describe('Route Execution', () => {
         account: 'session.account',
         comment: 'body',
       })
-      .transform('comment', ({ comment, account }) => ({
+      .transform('comment', ({ comment, account }: any) => ({
         authorId: account?.id,
         authorName: account?.name,
         ...comment,
@@ -84,31 +90,7 @@ describe('Route Execution', () => {
 
   it('will use input HTTP Request to construct a new outgoing HTTP Request if preserved', async () => {
     // Given  //
-    const hodr = makeHodr();
-    hodr.use(memoryTracker({ limit: 10 }));
-
-    const router = hodr.router('test-router');
-
-    hodr
-      .destination('test-destination')
-      .httpClient({})
-      .using(
-        makeFakeHttpClientPlugin({
-          '/comments/listing/thread/5': {
-            POST: (req: HttpRequest) => ({
-              statusCode: 201,
-              body: {
-                content: {
-                  ...req.body,
-                  id: 558,
-                  createdAt: 1749246021270,
-                },
-                _links: { self: 'http://www.hatsofmeat.com' },
-              },
-            }),
-          },
-        })
-      );
+    const { router } = setupTestDestination();
 
     router
       .post('/comments/:targetType/thread/:targetId')

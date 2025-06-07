@@ -1,0 +1,135 @@
+import { describe, it, expect } from 'vitest';
+import { HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
+import {
+  makeFakeHttpClientPlugin,
+  makeRequestContext,
+  testRouteAdapter,
+  AlwaysFailValidator,
+  FakeHttpClientResponses,
+} from '@hodr/testkit';
+
+const setupTestDestination = (params: FakeHttpClientResponses) => {
+  const hodr = makeHodr();
+  hodr.use(memoryTracker({ limit: 10 }));
+
+  const router = hodr.router('test-router');
+
+  hodr
+    .destination('test-destination')
+    .httpClient({})
+    .using(makeFakeHttpClientPlugin(params));
+
+  return { router, hodr };
+};
+
+describe('Route Response Status Propagation', () => {
+  it('should respond with 400 Bad Request if validation fails', async () => {
+    // Given  //
+    const { router } = setupTestDestination({
+      '/comments/listing/thread/5': {
+        POST: (req: HttpRequest) => ({
+          statusCode: 201,
+          body: {
+            content: {
+              ...req.body,
+              id: 558,
+              createdAt: 1749246021270,
+            },
+            _links: { self: 'http://www.hatsofmeat.com' },
+          },
+        }),
+      },
+    });
+
+    router
+      .post('/comments/:targetType/thread/:targetId')
+      .validate(AlwaysFailValidator)
+      .httpPost('test-destination', '/comments/listing/thread/5')
+      .extractResponseBody('content');
+
+    // When  //
+
+    const testCtx = makeRequestContext({
+      uri: '/comments/listing/thread/5',
+      body: {
+        uffstay: 'from the unktray',
+      },
+    });
+
+    await router.routes[0].handleRequest(testCtx, testRouteAdapter);
+
+    // Then  //
+
+    expect(testCtx.response!.statusCode).toBe(400);
+  });
+
+  it('should propagate a 409 Conflict from a downstream http service', async () => {
+    // Given  //
+    const { router } = setupTestDestination({
+      '/stuff': {
+        POST: {
+          statusCode: 409,
+          body: {
+            error: 'You tried to steal my booked laundry time. This causes a CONFLICT!',
+          },
+        },
+      },
+    });
+
+    router
+      .post('/stuff')
+      .httpPost('test-destination', '/stuff')
+      .expectHttpSuccess()
+      .extractResponseBody('content');
+
+    // When  //
+
+    const testCtx = makeRequestContext({
+      uri: '/stuff',
+      body: {
+        uffstay: 'from the unktray',
+      },
+    });
+
+    await router.routes[0].handleRequest(testCtx, testRouteAdapter);
+
+    // Then  //
+
+    expect(testCtx.response!.statusCode).toBe(409);
+  });
+
+  it('should propagate a 500 internal error from a downstream http service', async () => {
+    // Given  //
+    const { router } = setupTestDestination({
+      '/shaky-stuff': {
+        POST: {
+          statusCode: 500,
+          body: {
+            error: 'You huffed and puffed and my poor house blew in. Thanks a lot.',
+          },
+        },
+      },
+    });
+
+    router
+      .post('/shaky-stuff')
+      .httpPost('test-destination', '/shaky-stuff')
+      .expectHttpSuccess()
+      .extractResponseBody('content');
+
+    // When  //
+
+    const testCtx = makeRequestContext({
+      uri: '/shaky-stuff',
+      body: {
+        present: 'Here, take this!',
+      },
+    });
+
+    await router.routes[0].handleRequest(testCtx, testRouteAdapter);
+
+    // Then  //
+
+    expect(testCtx.response!.statusCode).toBe(500);
+  });
+});
