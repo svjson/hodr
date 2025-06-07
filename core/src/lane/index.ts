@@ -8,6 +8,7 @@
 export type {
   Destination,
   DestinationBuilder,
+  ExpectPredicateFunction,
   HodrStep,
   Input,
   InternalStatusClientErrorCode,
@@ -16,6 +17,7 @@ export type {
   InternalStatusCode,
   Lane,
   Origin,
+  TransformFunction,
   Usable,
   UsableType,
 } from './types';

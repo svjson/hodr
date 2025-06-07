@@ -3,13 +3,21 @@ import {
   type HttpRequest,
   type HttpResponse,
   type HttpStatusCode,
+  HttpStatusErrorCode,
   type RequestParameters,
+  errorCodeToHttpStatus,
+  httpErrorStatusToInternal,
   httpStatusToInternal,
 } from '../destination';
 import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
-import { HodrStep, TransformFunction } from './types';
+import {
+  ExpectPredicateFunction,
+  HodrStep,
+  InternalStatusErrorCode,
+  TransformFunction,
+} from './types';
 
 /* Step for calling a named downstream HTTP Destination */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -80,11 +88,50 @@ export class TransformStep<I, O> implements HodrStep<I, O> {
     if (this.path) {
       return {
         ...ctx.payload,
-        [this.path]: await this.fn(ctx.payload, ctx),
+        [this.path]: await this.fn(ctx.payload, ctx, ctx.atoms()),
       };
     }
 
-    return await this.fn(ctx.payload, ctx);
+    return await this.fn(ctx.payload, ctx, ctx.atoms());
+  }
+}
+
+/** Step for enforcing an arbitrary expectation by raising an error if not met */
+export class ExpectStep<T> implements HodrStep<T, T> {
+  name = 'expect';
+  internalErrorCode: InternalStatusErrorCode;
+  httpErrorCode: HttpStatusErrorCode;
+
+  constructor(
+    private root: () => Hodr,
+    private predicate: ExpectPredicateFunction<T>,
+    private errorCode: InternalStatusErrorCode | HttpStatusErrorCode,
+    name?: string
+  ) {
+    this.name = name || this.name;
+
+    this.internalErrorCode =
+      typeof this.errorCode === 'string'
+        ? this.errorCode
+        : httpErrorStatusToInternal[this.errorCode];
+
+    this.httpErrorCode =
+      typeof this.errorCode === 'string'
+        ? errorCodeToHttpStatus[this.errorCode]
+        : this.errorCode;
+  }
+
+  async execute(ctx: ExecutionContext<T>) {
+    const result: boolean = await this.predicate(ctx.payload, ctx, ctx.atoms());
+    if (!result) {
+      throw new HodrError(
+        'Expectation failed!',
+        { http: { statusCode: this.httpErrorCode } },
+        this.internalErrorCode
+      );
+    }
+
+    return ctx.payload;
   }
 }
 

@@ -1,4 +1,4 @@
-import { ExecutionContext } from '../context';
+import { ExecutionContext, AtomCollection } from '../context';
 import { HttpClientConfig, HttpClientProvider, InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
 
@@ -124,7 +124,14 @@ export interface Usable {
   __type: UsableType;
 }
 
+export type ExpectPredicateFunction<I> = (
+  payload: I,
+  ctx: ExecutionContext<I>,
+  atoms: AtomCollection
+) => Promise<boolean> | boolean;
+
 export type TransformFunction<I, O> = (
   payload: I,
-  ctx?: ExecutionContext<I>
+  ctx: ExecutionContext<I>,
+  atoms: AtomCollection
 ) => Promise<O> | O;

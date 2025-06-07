@@ -66,6 +66,19 @@ export class HodrRoute extends AbstractInput<HttpRequest> {
     };
   }
 
+  newExecution(
+    request: HttpRequest,
+    initialStep: InitialStepExecution,
+    metadata: Record<string, any>
+  ): ExecutionContext<HttpRequest> {
+    const ctx = super.newExecution(request, initialStep, metadata);
+    Object.assign(ctx.atoms(), request.params, request.session, {
+      params: request.params,
+      session: request.session,
+    });
+    return ctx;
+  }
+
   /**
    * Handle an incoming HTTP request from an actual Router-implementation.
    *

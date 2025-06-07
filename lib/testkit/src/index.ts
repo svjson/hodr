@@ -10,6 +10,6 @@ export {
   testRouteAdapter,
 } from './test-route-adapter';
 
-export { dumpLastExecution } from './tracing';
-
+export { getLastExecution, dumpLastExecution } from './tracing';
+export { setupTestDestination } from './test-destination';
 export { AlwaysFailValidator, AlwaysPassValidator } from './test-validators';

@@ -1,26 +1,11 @@
-import { describe, it, expect } from 'vitest';
 import { HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
 import {
-  makeFakeHttpClientPlugin,
-  makeRequestContext,
-  testRouteAdapter,
   AlwaysFailValidator,
-  FakeHttpClientResponses,
+  makeRequestContext,
+  setupTestDestination,
+  testRouteAdapter,
 } from '@hodr/testkit';
-
-const setupTestDestination = (params: FakeHttpClientResponses) => {
-  const hodr = makeHodr();
-  hodr.use(memoryTracker({ limit: 10 }));
-
-  const router = hodr.router('test-router');
-
-  hodr
-    .destination('test-destination')
-    .httpClient({})
-    .using(makeFakeHttpClientPlugin(params));
-
-  return { router, hodr };
-};
+import { describe, expect, it } from 'vitest';
 
 describe('Route Response Status Propagation', () => {
   it('should respond with 400 Bad Request if validation fails', async () => {

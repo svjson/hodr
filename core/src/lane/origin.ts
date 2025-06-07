@@ -16,7 +16,7 @@ export abstract class AbstractInput<T> implements Input<T> {
 
   abstract variant(): string;
 
-  newExecution<T>(
+  newExecution(
     initialPayload: T,
     initialStep: InitialStepExecution,
     metadata?: Record<string, any>

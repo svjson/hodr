@@ -5,6 +5,7 @@ import type {
   HttpRequest,
   RequestParameters,
   HttpMethod,
+  HttpStatusErrorCode,
 } from '../destination';
 import {
   DefaultHttpClientDestinationAdapter,
@@ -24,6 +25,7 @@ import { Hodr } from '../types';
 import { HodrDestination } from './destination';
 import {
   CallStep,
+  ExpectStep,
   ExtractStep,
   MapStatusCodeStep,
   ParallelStep,
@@ -33,8 +35,10 @@ import {
 } from './step';
 import type {
   DestinationBuilder,
+  ExpectPredicateFunction,
   HodrStep,
   HttpClientDestinationBuilderStub,
+  InternalStatusErrorCode,
   Lane,
   TransformFunction,
 } from './types';
@@ -66,7 +70,44 @@ export class LaneBuilder<Payload = any> {
     return new LaneBuilder<O>(this.root, this.lane);
   }
 
-  /** Register a sequencial step */
+  /** Register a validation step */
+  validate(validatorObject: any): this;
+  validate(path: string, validatorObject: any): this;
+  validate(arg1: any, arg2?: any): this {
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new HodrError('Invalid validator step configuration.');
+    }
+    if (arg2 === undefined) {
+      this.lane.steps.push(new ValidateStep(this.root, arg1));
+    } else {
+      this.lane.steps.push(new ValidateStep(this.root, arg2, arg1));
+    }
+
+    return this;
+  }
+
+  /** Register an expect step */
+  expect(
+    pred: ExpectPredicateFunction<Payload>,
+    errorCode: InternalStatusErrorCode | HttpStatusErrorCode
+  ): this {
+    this.lane.steps.push(new ExpectStep(this.root, pred, errorCode));
+    return this;
+  }
+
+  expectValue(errorCode: InternalStatusErrorCode | HttpStatusErrorCode): this {
+    this.lane.steps.push(
+      new ExpectStep(
+        this.root,
+        (v) => v !== null && v !== undefined,
+        errorCode,
+        'expect-value'
+      )
+    );
+    return this;
+  }
+
+  /** Register a sequential step */
   sequence(steps: HodrStep[]): this {
     this.lane.steps.push(new SequenceStep(steps));
     return this;
@@ -133,22 +174,6 @@ export class LaneBuilder<Payload = any> {
   /** Register a destination invocation step */
   invokeDestination(destination: string, path: string): LaneBuilder<any> {
     this.lane.steps.push(new CallStep(destination, path));
-    return this;
-  }
-
-  /** Register a validation step */
-  validate(validatorObject: any): this;
-  validate(path: string, validatorObject: any): this;
-  validate(arg1: any, arg2?: any): this {
-    if (arg2 && typeof arg1 !== 'string') {
-      throw new HodrError('Invalid validator step configuration.');
-    }
-    if (arg2 === undefined) {
-      this.lane.steps.push(new ValidateStep(this.root, arg1));
-    } else {
-      this.lane.steps.push(new ValidateStep(this.root, arg2, arg1));
-    }
-
     return this;
   }
 }

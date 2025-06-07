@@ -65,6 +65,8 @@ export interface FinalizeParams {
   metadata?: Record<string, any>;
 }
 
+export type AtomCollection = Record<string, any>;
+
 /**
  * Execution context of a unit of work triggered by an origin (e.g. an HTTP request).
  *
@@ -100,6 +102,9 @@ export interface ExecutionContext<Payload> extends ContextFields {
   state: ContextStatus;
 
   steps: StepExecution[];
+
+  atoms(): AtomCollection;
+  atom(name: string): any;
 
   /**
    * Add a journal entry to the metadata section of the current step.

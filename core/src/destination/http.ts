@@ -1,4 +1,4 @@
-import { ExecutionContext } from '../context';
+import { AtomCollection, ExecutionContext } from '../context';
 import { extractPath } from '../engine';
 import { HttpClientDestinationAdapter } from '../engine/types';
 import { InternalStatusCode, InternalStatusErrorCode } from '../lane';
@@ -196,8 +196,12 @@ const isHttpRequest = (obj: any) => {
   );
 };
 
-export const resolveParams = (obj: any, params: RequestParameters) => {
-  const result = {};
+export const resolveParams = (
+  obj: any,
+  params: RequestParameters,
+  atoms?: AtomCollection
+) => {
+  const result = Object.assign({}, atoms || {});
   if (typeof params.pathParams === 'string') {
     Object.assign(result, extractPath(obj, params.pathParams!) ?? {});
   } else if (typeof params.pathParams === 'object') {
@@ -234,25 +238,35 @@ export class DefaultHttpClientDestinationAdapter implements HttpClientDestinatio
   ) {}
 
   private async _buildRequest(
-    _ctx: ExecutionContext<any>,
+    ctx: ExecutionContext<any>,
     path: string,
     reqObj: any,
     params: RequestParameters = { method: 'GET' }
   ): Promise<HttpRequest> {
+    let pathParams: Record<string, any>;
+    let body: any;
+
     if (isHttpRequest(reqObj)) {
-      return {
-        ...reqObj,
-        uri: compile(path)(Object.assign({}, reqObj, reqObj.params ?? {})),
-      };
+      pathParams = Object.assign({}, reqObj, reqObj.params ?? {});
+      body = reqObj.body;
+    } else {
+      pathParams = resolveParams(reqObj, params, ctx.atoms());
+      body = prepareBody(reqObj, params);
     }
 
-    const pathParams = resolveParams(reqObj, params);
-    const body = prepareBody(reqObj, params);
+    const uri = compile(path)(pathParams);
+
+    ctx.addJournalEntry({
+      id: 'parameterized-uri',
+      title: 'Parameterized URI',
+      entry: uri,
+      typeHint: 'plaintext',
+    });
 
     return {
       method: params.method!,
       uri: compile(path)(pathParams),
-      body: body,
+      body: ['POST', 'PUT', 'PATCH'].includes(params.method!) ? body : null,
     };
   }
 

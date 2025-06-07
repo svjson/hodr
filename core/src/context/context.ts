@@ -1,11 +1,13 @@
-import type {
-  FinalizeStepExecution,
-  InitialStepExecution,
-  MetaJournalEntry,
-  StepExecution,
+import {
+  extractPath,
+  type FinalizeStepExecution,
+  type InitialStepExecution,
+  type MetaJournalEntry,
+  type StepExecution,
 } from '../engine';
 import type { Lane } from '../lane';
 import type {
+  AtomCollection,
   ContextStatus,
   ExecutionContext,
   ExecutionContextParams,
@@ -26,6 +28,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
 
   payload?: Payload;
 
+  private _atoms: AtomCollection = {};
   metadata: Record<string, any> = {};
 
   inputTopic!: string;
@@ -41,6 +44,14 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
     this.metadata = params.metadata;
     this.inputTopic = params.inputTopic;
     this.outputTopic = params.outputTopic;
+  }
+
+  atoms(): AtomCollection {
+    return this._atoms;
+  }
+
+  atom(name: string): any {
+    return extractPath(this._atoms, name);
   }
 
   addJournalEntry(entry: MetaJournalEntry): ExecutionContext<Payload> {
