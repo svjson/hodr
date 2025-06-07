@@ -1,7 +1,8 @@
 import { ExecutionContext } from '../context';
+import { extractPath } from '../engine';
 import { HttpClientDestinationAdapter } from '../engine/types';
 import { Hodr } from '../types';
-import { HttpClient, HttpRequest } from './types';
+import { HttpClient, HttpMethods, HttpRequest, RequestParameters } from './types';
 
 import { compile } from 'path-to-regexp';
 
@@ -16,15 +17,48 @@ export const errorCodeToHttpStatus: Record<string, number> = {
 };
 
 /**
- * An extremely simplistic DestinationAdapter for outgoing HTTP.
+ * This is hopelessly hacky, but will have to do for now.
+ */
+const isHttpRequest = (obj: any) => {
+  return (
+    obj.method &&
+    HttpMethods.includes(obj.method) &&
+    typeof obj.uri === 'string' &&
+    (!obj.headers || typeof obj.headers === 'object') &&
+    (!obj.session || typeof obj.session === 'object')
+  );
+};
+
+export const resolveParams = (obj: any, params: RequestParameters) => {
+  const result = {};
+  if (typeof params.pathParams === 'string') {
+    Object.assign(result, extractPath(obj, params.pathParams!) ?? {});
+  } else if (typeof params.pathParams === 'object') {
+    Object.assign(result, params.pathParams);
+  }
+  return result;
+};
+
+export const prepareBody = (obj: any, params: RequestParameters) => {
+  if (typeof params.body === 'string') {
+    return extractPath(obj, params.body);
+  }
+
+  return obj;
+};
+
+/**
+ * DestinationAdapter for outgoing HTTP, that accepts either a HttpRequest input
+ * or an arbitrary payload that will be shaped into an HttpRequest according to
+ * a supplied `RequestParameters` object.
  *
- * To be torn out with its roots, kneaded into a ball and rolled out again, with
- * and interface/API that makes actual sense.
- *
- * Also has that one eyesore that breaks the zero-dependency badge of honour, in
+ * Has that one eyesore that breaks the zero-dependency badge of honour, in
  * order to parameterize uri templates. Perhaps it's better to allow the HttpClient-plugin
  * to deal with this - or just roll our own. How hard could it be? It couldn't possibly
  * reach left-pad levels of sheer complexity?
+ *
+ * On second thought, we'll keep the repsonsibility of parameterizing the URLs, but
+ * we'll split the request shaping off into a separate child step for traceability.
  */
 export class DefaultHttpClientDestinationAdapter implements HttpClientDestinationAdapter {
   constructor(
@@ -32,14 +66,36 @@ export class DefaultHttpClientDestinationAdapter implements HttpClientDestinatio
     private httpClient: HttpClient
   ) {}
 
-  async invoke(ctx: ExecutionContext<HttpRequest>, path: string): Promise<any> {
-    const request = ctx.payload;
+  private async _buildRequest(
+    _ctx: ExecutionContext<any>,
+    path: string,
+    reqObj: any,
+    params: RequestParameters = { method: 'GET' }
+  ): Promise<HttpRequest> {
+    if (isHttpRequest(reqObj)) {
+      return {
+        ...reqObj,
+        uri: compile(path)(Object.assign({}, reqObj, reqObj.params ?? {})),
+      };
+    }
 
-    return await this.httpClient.request(ctx, {
-      method: request.method,
-      uri: compile(path)(request.params),
-      params: request.params,
-      body: request.body,
-    });
+    const pathParams = resolveParams(reqObj, params);
+    const body = prepareBody(reqObj, params);
+
+    return {
+      method: params.method!,
+      uri: compile(path)(pathParams),
+      body: body,
+    };
+  }
+
+  async invoke(
+    ctx: ExecutionContext<HttpRequest>,
+    path: string,
+    params?: RequestParameters
+  ): Promise<any> {
+    const request: HttpRequest = await this._buildRequest(ctx, path, ctx.payload, params);
+
+    return await this.httpClient.request(ctx, request);
   }
 }

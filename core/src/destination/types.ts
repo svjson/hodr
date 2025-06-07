@@ -11,6 +11,18 @@ export interface HttpClient {
   ): Promise<HttpResponse>;
 }
 
+export const HttpMethods = [
+  'GET',
+  'PUT',
+  'POST',
+  'DELETE',
+  'PATCH',
+  'HEAD',
+  'OPTIONS',
+  'CONNECT',
+  'TRACE',
+];
+
 export type HttpMethod =
   | 'GET'
   | 'PUT'
@@ -21,6 +33,12 @@ export type HttpMethod =
   | 'OPTIONS'
   | 'CONNECT'
   | 'TRACE';
+
+export interface RequestParameters {
+  method?: HttpMethod;
+  pathParams?: Record<string, any> | string;
+  body?: Record<string, any> | string;
+}
 
 /**
  * Hodr-abstraction of the components of an HTTP request. Clearly not the full story of

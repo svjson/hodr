@@ -32,10 +32,10 @@ export interface Input<T> {
   ): ExecutionContext<T>;
 }
 
-export interface Destination<T = any> {
+export interface Destination<T = any, Params = unknown> {
   root: () => Hodr;
   readonly name?: string;
-  invoke(ctx: ExecutionContext<T>, path: string): Promise<any>;
+  invoke(ctx: ExecutionContext<T>, path: string, params: Params): Promise<any>;
 }
 
 export interface DestinationBuilder {

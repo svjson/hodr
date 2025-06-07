@@ -1,8 +1,14 @@
 import type { ExecutionContext } from '../context';
-import { HttpClient, HttpResponse } from '../destination';
-import { FileSystemDestinationAdapter } from '../destination';
-import { DefaultHttpClientDestinationAdapter } from '../destination';
-import { HttpRequest } from '../destination/types';
+import type {
+  HttpClient,
+  HttpResponse,
+  HttpRequest,
+  RequestParameters,
+} from '../destination';
+import {
+  DefaultHttpClientDestinationAdapter,
+  FileSystemDestinationAdapter,
+} from '../destination';
 import type {
   ExtractionMap,
   HttpClientConfig,
@@ -12,6 +18,7 @@ import type {
   StatusCondMap,
 } from '../engine';
 import { HodrError, extractPath, httpStatusMatcher } from '../engine';
+import { HttpStatusRange } from '../engine/validate';
 import { Hodr } from '../types';
 import { HodrDestination } from './destination';
 import {
@@ -75,8 +82,14 @@ export class LaneBuilder<Payload = any> {
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
-  httpPost(destination: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(destination, path));
+  httpPost(
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    this.lane.steps.push(
+      new CallStep(destination, path, Object.assign(params ?? {}, { method: 'POST' }))
+    );
     return new HttpResponseLaneBuilder(this.root, this.lane);
   }
 
@@ -106,7 +119,7 @@ export class LaneBuilder<Payload = any> {
   validate(path: string, validatorObject: any): this;
   validate(arg1: any, arg2?: any): this {
     if (arg2 && typeof arg1 !== 'string') {
-      throw new HodrError('Invalid validator step configuration');
+      throw new HodrError('Invalid validator step configuration.');
     }
     if (arg2 === undefined) {
       this.lane.steps.push(new ValidateStep(this.root, arg1));
@@ -123,6 +136,11 @@ export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {}
 export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
   expectHttpOk(): HttpResponseLaneBuilder {
     this.lane.steps.push(httpStatusMatcher(200));
+    return this;
+  }
+
+  expectHttpSuccess(): HttpResponseLaneBuilder {
+    this.lane.steps.push(httpStatusMatcher(new HttpStatusRange(200, 220)));
     return this;
   }
 

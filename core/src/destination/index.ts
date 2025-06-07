@@ -5,7 +5,13 @@
  * protocols and not actual implementations thereof this might perhaps just as well
  * go live in the engine or lane-module.
  */
-export type { HttpClient, HttpMethod, HttpRequest, HttpResponse } from './types';
+export type {
+  HttpClient,
+  HttpMethod,
+  HttpRequest,
+  HttpResponse,
+  RequestParameters,
+} from './types';
 export { FileSystemDestinationAdapter } from './fs';
 
 export { DefaultHttpClientDestinationAdapter, errorCodeToHttpStatus } from './http';

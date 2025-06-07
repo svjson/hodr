@@ -1,5 +1,5 @@
 import { ExecutionContext } from '../context';
-import { HttpClient } from '../destination';
+import { HttpClient, RequestParameters } from '../destination';
 import { Usable } from '../lane/types';
 import { HttpStatusPattern } from './validate';
 
@@ -95,8 +95,8 @@ export class HodrError extends Error {
  */
 export type ObjectPathReference = string | string[];
 
-export interface DestinationAdapter {
-  invoke(ctx: ExecutionContext<unknown>, path: string): Promise<any>;
+export interface DestinationAdapter<ParamsType = unknown> {
+  invoke(ctx: ExecutionContext<unknown>, path: string, params?: ParamsType): Promise<any>;
 }
 
 /**
@@ -125,7 +125,8 @@ export interface HttpClientConfig {
  */
 export type HttpClientProvider = (httpClientConfig: HttpClientConfig) => HttpClient;
 
-export interface HttpClientDestinationAdapter extends DestinationAdapter {}
+export interface HttpClientDestinationAdapter
+  extends DestinationAdapter<RequestParameters> {}
 
 export interface Validator extends Usable {
   readonly __type: 'validator';

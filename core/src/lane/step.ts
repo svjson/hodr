@@ -1,5 +1,5 @@
 import { ExecutionContext } from '../context';
-import { HttpRequest, HttpResponse } from '../destination';
+import { HttpRequest, HttpResponse, RequestParameters } from '../destination';
 import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
@@ -11,7 +11,8 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
 
   constructor(
     private destination: string,
-    private path: string
+    private path: string,
+    private params?: RequestParameters
   ) {
     this.name = `http-req-${destination}`;
   }
@@ -23,7 +24,7 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
       throw new HodrError(`Destination '${this.destination}' has not been configured.`);
     }
 
-    return await destination.invoke(ctx, this.path);
+    return await destination.invoke(ctx, this.path, this.params);
   }
 }
 
