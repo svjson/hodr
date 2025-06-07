@@ -121,6 +121,7 @@ export interface RequestParameters {
 export interface HttpRequest {
   method: HttpMethod;
   uri: string;
+  uriTemplate?: string;
   headers?: unknown;
   session?: { [key: PropertyKey]: any };
   params?: Record<string, string>;

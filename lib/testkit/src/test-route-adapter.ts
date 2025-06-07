@@ -44,7 +44,8 @@ export const testRouteAdapter: RouteRequestAdapter<TestRouterContext> = {
   extractRequest: function (ctx: TestRouterContext, route: HodrRoute): HttpRequest {
     return {
       method: route.method,
-      uri: route.path,
+      uri: ctx.uri,
+      uriTemplate: route.path,
       params: ctx.params,
       headers: ctx.headers,
       session: ctx.session,

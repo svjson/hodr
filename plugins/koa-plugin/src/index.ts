@@ -55,7 +55,8 @@ const koaRequestAdapter: RouteRequestAdapter<KoaContext> = {
   extractRequest(koaContext, route) {
     return {
       method: route.method,
-      uri: route.path,
+      uri: koaContext.request.url,
+      uriTemplate: route.path,
       headers: koaContext.headers,
       params: koaContext.params,
       session: koaContext.session,
