@@ -7,6 +7,7 @@
   "description": "A framework for building and routing modular service interactions with verified, transformable contracts between steps.",
   "workspaces": [
     "core",
+    "lib/*",
     "plugins/*"
   ],
   "scripts": {

@@ -1,15 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import KoaRouter from '@koa/router';
 import Koa from 'koa';
-import type {
-  ExecutionContext,
-  Hodr,
-  HttpClient,
-  HttpClientConfig,
-  HttpClientProvider,
-  HttpMethod,
-  HttpResponse,
-} from '@hodr/core';
+import type { Hodr } from '@hodr/core';
+
+import { makeFakeHttpClientPlugin } from '@hodr/testkit';
 
 import { makeHodr, memoryTracker } from '@hodr/core';
 import { mount } from '@hodr/koa-plugin';
@@ -32,32 +26,6 @@ const COMMENT_463 = {
   createdAt: 1749206056825,
   comment:
     'So, it was YOU!!! Why I oughtta steal your entire collection of suspiciously identical hats!',
-};
-
-class FakeHttpClient implements HttpClient {
-  constructor(
-    private config: HttpClientConfig,
-    private responses: FakeHttpClientResponses
-  ) {}
-
-  async request(
-    ctx: ExecutionContext<any>,
-    request: Record<string, any>
-  ): Promise<HttpResponse> {
-    const response = this.responses[request.uri]?.[request.method] ?? {
-      statusCode: 404,
-      body: { content: {}, _metadata: {} } as any,
-      headers: {},
-    };
-
-    return response;
-  }
-}
-
-type FakeHttpClientResponses = Record<string, { [key in HttpMethod]?: HttpResponse }>;
-
-const makeFakeHttpClientPlugin = (responses: FakeHttpClientResponses): HttpClientProvider => {
-  return (config: HttpClientConfig): HttpClient => new FakeHttpClient(config, responses);
 };
 
 interface KoaFixture {

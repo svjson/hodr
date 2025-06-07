@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       '@hodr/core': new URL('../../core/src', import.meta.url).pathname,
       '@hodr/koa-plugin': new URL('./src', import.meta.url).pathname,
+      '@hodr/testkit': new URL('../../lib/testkit/src', import.meta.url).pathname,
     },
   },
 });

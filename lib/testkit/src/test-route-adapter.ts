@@ -15,8 +15,27 @@ export interface TestRouterContext {
   params: Record<string, string>;
   session: Record<string, any>;
   response?: HttpResponse;
-  body: any;
+  body?: any;
 }
+
+export const makeRequestContext = (args: {
+  method?: HttpMethod;
+  uri: string;
+  headers?: Record<string, string>;
+  params?: Record<string, string>;
+  session?: Record<string, any>;
+  response?: HttpResponse;
+  body?: any;
+}): TestRouterContext => {
+  return {
+    method: 'GET',
+    headers: {},
+    params: {},
+    session: {},
+    body: null,
+    ...args,
+  };
+};
 
 export const testRouteAdapter: RouteRequestAdapter<TestRouterContext> = {
   name: 'TestRouter',

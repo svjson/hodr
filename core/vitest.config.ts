@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@hodr/core': new URL('../core/src', import.meta.url).pathname,
+      '@hodr/testkit': new URL('../lib/testkit/src', import.meta.url).pathname,
     },
   },
 });

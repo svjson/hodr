@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { makeHodr, memoryTracker } from '@hodr/core';
-import { testRouteAdapter, TestRouterContext } from './test-route-adapter';
-import { makeFakeHttpClientPlugin } from './fake-http-client';
+import { HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
+import {
+  makeFakeHttpClientPlugin,
+  makeRequestContext,
+  testRouteAdapter,
+} from '@hodr/testkit';
 
 describe('Route Execution', () => {
   it('uses body, session, and params to construct a POST request, sends it to the remote, and maps the response back to the client', async () => {
@@ -17,7 +20,7 @@ describe('Route Execution', () => {
       .using(
         makeFakeHttpClientPlugin({
           '/comments/listing/thread/5': {
-            POST: (req) => ({
+            POST: (req: HttpRequest) => ({
               statusCode: 201,
               body: {
                 content: {
@@ -52,10 +55,9 @@ describe('Route Execution', () => {
       .extractResponseBody('content');
 
     // When  //
-    const testCtx: TestRouterContext = {
+    const testCtx = makeRequestContext({
       method: 'POST',
       uri: '/comments/listing/thread/5',
-      headers: {},
       params: { targetType: 'listing', targetId: '5' },
       session: {
         account: {
@@ -64,7 +66,7 @@ describe('Route Execution', () => {
         },
       },
       body: { type: 'comment', comment: 'Sometimes I go up, sometimes I go down!' },
-    };
+    });
 
     await router.routes[0].handleRequest(testCtx, testRouteAdapter);
 
@@ -93,7 +95,7 @@ describe('Route Execution', () => {
       .using(
         makeFakeHttpClientPlugin({
           '/comments/listing/thread/5': {
-            POST: (req) => ({
+            POST: (req: HttpRequest) => ({
               statusCode: 201,
               body: {
                 content: {
@@ -115,19 +117,17 @@ describe('Route Execution', () => {
       .extractResponseBody('content');
 
     // When  //
-    const testCtx: TestRouterContext = {
+    const testCtx = makeRequestContext({
       method: 'POST',
       uri: '/comments/listing/thread/5',
-      headers: {},
       params: { targetType: 'listing', targetId: '5' },
-      session: {},
       body: {
         authorId: 8844,
         authorName: 'Ella Vator',
         type: 'comment',
         comment: 'Sometimes I go up, sometimes I go down!',
       },
-    };
+    });
 
     await router.routes[0].handleRequest(testCtx, testRouteAdapter);
 

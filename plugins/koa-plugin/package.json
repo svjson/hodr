@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@hodr/core": "",
+    "@hodr/testkit": "",
     "koa-body": "^6.0.1",
     "koa-bodyparser": "^4.4.1",
     "supertest": "^7.1.1"

@@ -20,6 +20,7 @@ export type {
   StatusCondMap,
   StepExecution,
   StepMetadata,
+  Tracker,
   Validator,
 } from './engine';
 export { HodrError, memoryTracker } from './engine';
