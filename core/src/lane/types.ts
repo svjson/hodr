@@ -1,6 +1,8 @@
 import { ExecutionContext, AtomCollection } from '../context';
 import { HttpClientConfig, HttpClientProvider, InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
+import { LaneBuilder } from './builder';
+import { Target } from './destination';
 
 export interface Lane {
   root: () => Hodr;
@@ -35,6 +37,7 @@ export interface Input<T> {
 export interface Destination<T = any, Params = unknown> {
   root: () => Hodr;
   readonly name?: string;
+  targets: Record<string, Target>;
   invoke(ctx: ExecutionContext<T>, path: string, params: Params): Promise<any>;
 }
 
@@ -115,7 +118,15 @@ export interface DestinationBuilder {
 }
 
 export interface HttpClientDestinationBuilderStub {
-  using(client: HttpClientProvider): void;
+  using(client: HttpClientProvider): HttpClientDestinationBuilder;
+}
+
+export interface HttpClientDestinationBuilder {
+  target<T = any>(name: string): LaneBuilder<T>;
+  target<T = any>(
+    name: string,
+    configurator: (lane: LaneBuilder<T>) => void
+  ): HttpClientDestinationBuilder;
 }
 
 export type UsableType = 'tracker' | 'validator';

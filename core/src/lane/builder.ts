@@ -37,6 +37,7 @@ import type {
   DestinationBuilder,
   ExpectPredicateFunction,
   HodrStep,
+  HttpClientDestinationBuilder,
   HttpClientDestinationBuilderStub,
   InternalStatusErrorCode,
   Lane,
@@ -114,6 +115,27 @@ export class LaneBuilder<Payload = any> {
         return value;
       },
     });
+    return this;
+  }
+
+  dispatch(destination: string, target: string): this {
+    const dest = this.root().destinations[destination];
+    if (!dest) {
+      throw new HodrError(
+        `No such Destination: '${destination}'. Available Destinations: ${Object.keys(this.root().destinations).join(', ')}`
+      );
+    }
+    const _target = dest.targets[target];
+    if (!_target) {
+      throw new HodrError(
+        `No such Target: '${target}'. Available Targets on Destination '${destination}': ${Object.keys(dest.targets).join(', ')}`
+      );
+    }
+
+    for (const step of _target.lane.steps) {
+      this.lane.steps.push(step);
+    }
+
     return this;
   }
 
@@ -248,11 +270,39 @@ class HodrHttpClientDestinationBuilderStub implements HttpClientDestinationBuild
     private httpClientConfig: HttpClientConfig
   ) {}
 
-  using(client: HttpClientProvider): void {
+  using(client: HttpClientProvider): HttpClientDestinationBuilder {
     const clientInstance: HttpClient = client(this.httpClientConfig);
     this.destination.adapter = new DefaultHttpClientDestinationAdapter(
       this.root,
       clientInstance
     );
+    return new HodrHttpClientDestinationBuilder(this.root, this.destination);
+  }
+}
+
+class HodrHttpClientDestinationBuilder implements HttpClientDestinationBuilder {
+  constructor(
+    private root: () => Hodr,
+    private destination: HodrDestination
+  ) {}
+
+  target<T = any>(name: string): LaneBuilder<T>;
+  target<T = any>(
+    name: string,
+    configurator: (lane: LaneBuilder<T>) => void
+  ): HttpClientDestinationBuilder;
+  target<T = any>(
+    name: string,
+    configurator?: (lane: LaneBuilder<T>) => void
+  ): LaneBuilder<T> | HttpClientDestinationBuilder {
+    const target = this.destination.createTarget(name);
+    const builder = new LaneBuilder<T>(this.root, target.lane);
+
+    if (configurator) {
+      configurator(builder);
+      return this;
+    }
+
+    return builder;
   }
 }
