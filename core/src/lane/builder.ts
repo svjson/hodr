@@ -4,6 +4,7 @@ import type {
   HttpResponse,
   HttpRequest,
   RequestParameters,
+  HttpMethod,
 } from '../destination';
 import {
   DefaultHttpClientDestinationAdapter,
@@ -77,9 +78,24 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  httpGet(destination: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(destination, path));
+  private _httpStep(
+    method: HttpMethod,
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    this.lane.steps.push(
+      new CallStep(destination, path, Object.assign(params ?? {}, { method }))
+    );
     return new HttpResponseLaneBuilder(this.root, this.lane);
+  }
+
+  httpGet(
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    return this._httpStep('GET', destination, path, params);
   }
 
   httpPost(
@@ -87,25 +103,31 @@ export class LaneBuilder<Payload = any> {
     path: string,
     params?: RequestParameters
   ): HttpResponseLaneBuilder {
-    this.lane.steps.push(
-      new CallStep(destination, path, Object.assign(params ?? {}, { method: 'POST' }))
-    );
-    return new HttpResponseLaneBuilder(this.root, this.lane);
+    return this._httpStep('POST', destination, path, params);
   }
 
-  httpPut(destination: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(destination, path));
-    return new HttpResponseLaneBuilder(this.root, this.lane);
+  httpPut(
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    return this._httpStep('PUT', destination, path, params);
   }
 
-  httpPatch(destination: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(destination, path));
-    return new HttpResponseLaneBuilder(this.root, this.lane);
+  httpPatch(
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    return this._httpStep('PATCH', destination, path, params);
   }
 
-  httpDelete(destination: string, path: string): HttpResponseLaneBuilder {
-    this.lane.steps.push(new CallStep(destination, path));
-    return new HttpResponseLaneBuilder(this.root, this.lane);
+  httpDelete(
+    destination: string,
+    path: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder {
+    return this._httpStep('DELETE', destination, path, params);
   }
 
   /** Register a destination invocation step */
