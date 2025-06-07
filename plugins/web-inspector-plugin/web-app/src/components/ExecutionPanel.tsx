@@ -1,14 +1,32 @@
 /** @jsx h */
 import { h } from 'nano-jsx';
 import { StepTree } from './StepTree';
-import { ExecutionStepPanel, displayStepDetails } from './ExecutionStepPanel';
+import {
+  ExecutionStepPanel,
+  displayStepDetails,
+  getExpansionState,
+} from './ExecutionStepPanel';
 import { StepModel } from '../model.ts';
 
 export const ExecutionPanel = (props: { ctx: any; executionModel: any }) => {
   const { executionModel } = props;
 
+  let currentStep: StepModel | null = null;
+
   const onSelectStep = (stepNode: HTMLElement, step: StepModel) => {
-    displayStepDetails(stepNode.closest('.steps-container')! as HTMLElement, step);
+    const stepContainer = stepNode.closest('.steps-container')! as HTMLElement;
+
+    if (currentStep) {
+      currentStep.expansionState = currentStep.expansionState || {};
+      stepContainer.querySelectorAll('pretty-json').forEach((lmnt) => {
+        currentStep!.expansionState![
+          lmnt.closest('.payload-panel')!.getAttribute('data-id')!
+        ] = getExpansionState(lmnt as HTMLElement);
+      });
+    }
+
+    displayStepDetails(stepContainer, step);
+    currentStep = step;
   };
 
   const initialTransportStatus =

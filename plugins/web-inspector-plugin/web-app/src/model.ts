@@ -16,5 +16,6 @@ export interface StepModel {
   output?: any;
   metadata: StepMetadata;
   duration?: number | null;
+  expansionState?: Record<string, any>;
   children: StepModel[];
 }
