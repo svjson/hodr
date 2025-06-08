@@ -9,7 +9,9 @@ export const setupTestDestination = (
 
   const router = hodr.router('test-router');
 
-  hodr.destination('test-destination').httpClient({}).using(makeFakeHttpClientPlugin(params));
+  hodr
+    .destination('test-destination')
+    .httpClient({ adapter: makeFakeHttpClientPlugin(params) });
 
   return { router, hodr };
 };

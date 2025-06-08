@@ -19,8 +19,6 @@ export type {
   DestinationAdapter,
   ExtractionMap,
   FinalizeStepExecution,
-  HttpClientConfig,
-  HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
   Tracker,

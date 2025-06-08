@@ -107,22 +107,6 @@ export interface ExtractionMap {
 export type StatusCondEntry = [HttpStatusPattern, number];
 export type StatusCondMap = StatusCondEntry[];
 
-/**
- * The mighty and feared HttpClientConfig, consisting of a base URL. Yeah, that's it.
- * For now.
- */
-export interface HttpClientConfig {
-  baseUrl?: string;
-}
-
-/**
- * Factory-function interface or HttpCient plugins.
- */
-export type HttpClientProvider = (httpClientConfig: HttpClientConfig) => HttpClient;
-
-export interface HttpClientDestinationAdapter
-  extends DestinationAdapter<RequestParameters> {}
-
 export interface Validator extends Usable {
   readonly __type: 'validator';
   canValidate(validationType: any): boolean;

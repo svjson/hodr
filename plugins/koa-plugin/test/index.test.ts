@@ -3,7 +3,7 @@ import KoaRouter from '@koa/router';
 import Koa from 'koa';
 import type { Hodr } from '@hodr/core';
 
-import { makeFakeHttpClientPlugin } from '@hodr/testkit';
+import { FakeHttpClientResponses, makeFakeHttpClientPlugin } from '@hodr/testkit';
 
 import { makeHodr, memoryTracker } from '@hodr/core';
 import { mount } from '@hodr/koa-plugin';
@@ -49,8 +49,10 @@ const setupFixture = (responses: FakeHttpClientResponses) => {
 
     hodr
       .destination('leasing')
-      .httpClient({ baseUrl: 'http://leasing-service.local' })
-      .using(makeFakeHttpClientPlugin(responses));
+      .httpClient({
+        baseUrl: 'http://leasing-service.local',
+        adapter: makeFakeHttpClientPlugin(responses),
+      });
 
     const commentsRouter = hodr.router('comments').formatError(({ error }) => {
       return {

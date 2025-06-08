@@ -1,7 +1,8 @@
 import { ExecutionContext, AtomCollection } from '../context';
-import { HttpClientConfig, HttpClientProvider, InitialStepExecution } from '../engine';
+import { HttpClientConfig } from '../destination';
+import { InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
-import { BaseLaneBuilder, HttpDestinationLaneBuilder } from './builder';
+import { HttpDestinationLaneBuilder } from './builder';
 import { Target } from './destination';
 
 export interface Lane {
@@ -113,12 +114,8 @@ export type InternalStatusCode =
   | InternalStatusServerErrorCode;
 
 export interface DestinationBuilder {
-  httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilderStub;
+  httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilder;
   fileSystem(root: string): void;
-}
-
-export interface HttpClientDestinationBuilderStub {
-  using(client: HttpClientProvider): HttpClientDestinationBuilder;
 }
 
 export interface HttpClientDestinationBuilder {

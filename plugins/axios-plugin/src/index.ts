@@ -8,6 +8,7 @@ import {
   type HttpClientProvider,
   HodrError,
   httpErrorStatusToInternal,
+  joinUriParts,
 } from '@hodr/core';
 
 export const AxiosPlugin: HttpClientProvider = (
@@ -29,7 +30,7 @@ class AxiosHttpClient implements HttpClient {
     try {
       const req = {
         method: request.method,
-        url: `${this.httpClientConfig.baseUrl ?? ''}/${request.uri}`,
+        url: joinUriParts(this.httpClientConfig.baseUrl ?? '', request.uri),
         data: ['POST', 'PUT'].includes(request.method) ? request.body : undefined,
       };
 

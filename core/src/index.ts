@@ -2,21 +2,23 @@ export { makeHodr } from './hodr';
 export * from './types';
 export { Input, Origin } from './lane';
 export type { ContextStatus, EndStateStatus, ExecutionContext } from './context';
-export type {
-  HttpClient,
-  HttpMethod,
-  HttpRequest,
-  HttpResponse,
-  HttpStatusCode,
-  HttpStatusErrorCode,
-  RequestParameters,
+export {
+  type HttpClient,
+  type HttpClientConfig,
+  type HttpClientProvider,
+  type HttpMethod,
+  type HttpRequest,
+  type HttpResponse,
+  type HttpStatusCode,
+  type HttpStatusErrorCode,
+  type RequestParameters,
+  errorCodeToHttpStatus,
+  httpErrorStatusToInternal,
+  joinUriParts,
 } from './destination';
-export { errorCodeToHttpStatus, httpErrorStatusToInternal } from './destination';
 export { executeLane, extractMap, extractPath, mapStatusCode } from './engine';
 export type {
   FinalizeStepExecution,
-  HttpClientConfig,
-  HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
   StatusCondMap,

@@ -7,6 +7,8 @@
  */
 export type {
   HttpClient,
+  HttpClientConfig,
+  HttpClientProvider,
   HttpMethod,
   HttpRequest,
   HttpResponse,
@@ -22,5 +24,6 @@ export {
   httpErrorStatusToInternal,
   httpStatusToInternal,
   internalStatusToHttpStatus,
+  joinUriParts,
   resolveCanonicalHttpStatus,
 } from './http';

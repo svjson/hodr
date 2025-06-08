@@ -1,11 +1,12 @@
 import { AtomCollection, ExecutionContext } from '../context';
 import { extractPath } from '../engine';
-import { HttpClientDestinationAdapter } from '../engine/types';
 import { InternalStatusCode, InternalStatusErrorCode } from '../lane';
 import { InternalStatusSuccessCode } from '../lane/types';
 import { Hodr } from '../types';
 import {
   HttpClient,
+  HttpClientConfig,
+  HttpClientDestinationAdapter,
   HttpMethods,
   HttpRequest,
   HttpStatusCode,
@@ -218,6 +219,14 @@ export const prepareBody = (obj: any, params: RequestParameters) => {
   return obj;
 };
 
+export const joinUriParts = (...parts: string[]) => {
+  return parts
+    .filter((part) => part !== '')
+    .map((part, index) =>
+      index > 0 ? part.replace(/^\/+/, '') : part.replace(/\/+$/, '')
+    )
+    .join('/');
+};
 /**
  * DestinationAdapter for outgoing HTTP, that accepts either a HttpRequest input
  * or an arbitrary payload that will be shaped into an HttpRequest according to
@@ -232,10 +241,23 @@ export const prepareBody = (obj: any, params: RequestParameters) => {
  * we'll split the request shaping off into a separate child step for traceability.
  */
 export class DefaultHttpClientDestinationAdapter implements HttpClientDestinationAdapter {
+  endpoint: string;
+  httpClient: HttpClient;
+
   constructor(
     private root: () => Hodr,
-    private httpClient: HttpClient
-  ) {}
+    private httpClientConfig: HttpClientConfig
+  ) {
+    if (httpClientConfig.adapter) {
+      this.httpClient = httpClientConfig.adapter(this.httpClientConfig);
+    } else {
+      throw new Error(
+        'No HttpClient-implementation provided, and global configuration support is not implemented.'
+      );
+    }
+    this.endpoint = httpClientConfig.endpoint ?? '';
+  }
+
 
   private async _buildRequest(
     ctx: ExecutionContext<any>,
@@ -265,7 +287,7 @@ export class DefaultHttpClientDestinationAdapter implements HttpClientDestinatio
 
     return {
       method: params.method!,
-      uri: compile(path)(pathParams),
+      uri: compile(joinUriParts(this.endpoint, path))(pathParams),
       body: ['POST', 'PUT', 'PATCH'].includes(params.method!) ? body : null,
     };
   }

@@ -1,4 +1,5 @@
 import { ExecutionContext } from '../context';
+import { DestinationAdapter } from '../engine';
 
 /**
  * A, for now, simplistic interface to be implemented by plugins for any actual
@@ -138,3 +139,24 @@ export interface HttpResponse {
   statusCode: HttpStatusCode;
   body: unknown;
 }
+
+/**
+ * Configuration or Http Client Destinations.
+ *
+ * @param baseUrl - The protocol, host, port and optionally root uri for the remote API.
+ * @param endpoint - The root context for a particular Destination. May contain placeholders.
+ * @param adapter - The HttpClient plugin/provider. Required unless configured on application-wide.
+ */
+export interface HttpClientConfig {
+  baseUrl?: string;
+  endpoint?: string;
+  adapter?: HttpClientProvider;
+}
+
+/**
+ * Factory-function interface or HttpCient plugins.
+ */
+export type HttpClientProvider = (httpClientConfig: HttpClientConfig) => HttpClient;
+
+export interface HttpClientDestinationAdapter
+  extends DestinationAdapter<RequestParameters> {}

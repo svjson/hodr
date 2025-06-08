@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '../context';
 import type {
-  HttpClient,
+  HttpClientConfig,
   HttpResponse,
   RequestParameters,
   HttpMethod,
@@ -10,13 +10,7 @@ import {
   DefaultHttpClientDestinationAdapter,
   FileSystemDestinationAdapter,
 } from '../destination';
-import type {
-  ExtractionMap,
-  HttpClientConfig,
-  HttpClientProvider,
-  HttpStatusPattern,
-  StatusCondMap,
-} from '../engine';
+import type { ExtractionMap, HttpStatusPattern, StatusCondMap } from '../engine';
 import { HodrError, extractPath, httpStatusMatcher } from '../engine';
 import { HttpStatusRange } from '../engine/validate';
 import { Hodr } from '../types';
@@ -36,7 +30,6 @@ import type {
   ExpectPredicateFunction,
   HodrStep,
   HttpClientDestinationBuilder,
-  HttpClientDestinationBuilderStub,
   InternalStatusErrorCode,
   Lane,
   TransformFunction,
@@ -293,37 +286,97 @@ export class HttpDestinationLaneBuilder<Payload = any> extends BaseLaneBuilder<
   }
 
   httpGet(
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpGet(
     uri: string,
     params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpGet(
+    arg1: string | RequestParameters | undefined,
+    arg2?: RequestParameters
   ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    const uri = typeof arg1 === 'string' ? arg1 : '';
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new Error('Invalid configuration of httpGet');
+    }
+    const params = typeof arg1 === 'string' ? arg2 : arg1;
     return this._httpStep(this, 'GET', this.destination, uri, params);
   }
 
   httpPost(
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPost(
     uri: string,
     params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPost(
+    arg1: string | RequestParameters | undefined,
+    arg2?: RequestParameters
   ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    const uri = typeof arg1 === 'string' ? arg1 : '';
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new Error('Invalid configuration of httpPost');
+    }
+    const params = typeof arg1 === 'string' ? arg2 : arg1;
     return this._httpStep(this, 'POST', this.destination, uri, params);
   }
 
   httpPut(
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPut(
     uri: string,
     params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPut(
+    arg1: string | RequestParameters | undefined,
+    arg2?: RequestParameters
   ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    const uri = typeof arg1 === 'string' ? arg1 : '';
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new Error('Invalid configuration of httpPut');
+    }
+    const params = typeof arg1 === 'string' ? arg2 : arg1;
     return this._httpStep(this, 'PUT', this.destination, uri, params);
   }
 
   httpPatch(
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPatch(
     uri: string,
     params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpPatch(
+    arg1: string | RequestParameters | undefined,
+    arg2?: RequestParameters
   ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    const uri = typeof arg1 === 'string' ? arg1 : '';
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new Error('Invalid configuration of httpPatch');
+    }
+    const params = typeof arg1 === 'string' ? arg2 : arg1;
     return this._httpStep(this, 'PATCH', this.destination, uri, params);
   }
 
   httpDelete(
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpDelete(
     uri: string,
     params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>>;
+  httpDelete(
+    arg1: string | RequestParameters | undefined,
+    arg2?: RequestParameters
   ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    const uri = typeof arg1 === 'string' ? arg1 : '';
+    if (arg2 && typeof arg1 !== 'string') {
+      throw new Error('Invalid configuration of httpDelete');
+    }
+    const params = typeof arg1 === 'string' ? arg2 : arg1;
     return this._httpStep(this, 'DELETE', this.destination, uri, params);
   }
 }
@@ -380,33 +433,18 @@ export class HodrDestinationBuilder implements DestinationBuilder {
     private destination: HodrDestination
   ) {}
 
-  httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilderStub {
-    return new HodrHttpClientDestinationBuilderStub(
-      this.root,
-      this.destination,
-      httpClientConfig
-    );
+  httpClient(httpClientConfig: HttpClientConfig): HttpClientDestinationBuilder {
+    if (httpClientConfig.adapter) {
+      this.destination.adapter = new DefaultHttpClientDestinationAdapter(
+        this.root,
+        httpClientConfig
+      );
+    }
+    return new HodrHttpClientDestinationBuilder(this.root, this.destination);
   }
 
   fileSystem(root: string): void {
     this.destination.adapter = new FileSystemDestinationAdapter(root);
-  }
-}
-
-class HodrHttpClientDestinationBuilderStub implements HttpClientDestinationBuilderStub {
-  constructor(
-    private root: () => Hodr,
-    private destination: HodrDestination,
-    private httpClientConfig: HttpClientConfig
-  ) {}
-
-  using(client: HttpClientProvider): HttpClientDestinationBuilder {
-    const clientInstance: HttpClient = client(this.httpClientConfig);
-    this.destination.adapter = new DefaultHttpClientDestinationAdapter(
-      this.root,
-      clientInstance
-    );
-    return new HodrHttpClientDestinationBuilder(this.root, this.destination);
   }
 }
 

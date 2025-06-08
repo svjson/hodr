@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
+import { HttpClientProvider, HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
 import {
   makeFakeHttpClientPlugin,
   makeRequestContext,
@@ -12,26 +12,23 @@ const setupTestDestination = () => {
 
   const router = hodr.router('test-router');
 
-  hodr
-    .destination('test-destination')
-    .httpClient({})
-    .using(
-      makeFakeHttpClientPlugin({
-        '/comments/listing/thread/5': {
-          POST: (req: HttpRequest) => ({
-            statusCode: 201,
-            body: {
-              content: {
-                ...req.body,
-                id: 558,
-                createdAt: 1749246021270,
-              },
-              _links: { self: 'http://www.hatsofmeat.com' },
-            },
-          }),
+  const client: HttpClientProvider = makeFakeHttpClientPlugin({
+    '/comments/listing/thread/5': {
+      POST: (req: HttpRequest) => ({
+        statusCode: 201,
+        body: {
+          content: {
+            ...req.body,
+            id: 558,
+            createdAt: 1749246021270,
+          },
+          _links: { self: 'http://www.hatsofmeat.com' },
         },
-      })
-    );
+      }),
+    },
+  });
+
+  hodr.destination('test-destination').httpClient({ adapter: client });
 
   return { router, hodr };
 };
