@@ -12,7 +12,9 @@
     }
   },
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm run build:plugin && npm run build:web-app",
     "build:plugin": "tsup",
@@ -22,7 +24,7 @@
   },
   "dependencies": {
     "json-formatter-js": "^2.5.23",
-    "nano-jsx": "^0.0.30",
+    "preact": "^10.26.8",
     "pretty-json-custom-element": "^1.1.19"
   },
   "peerDependencies": {

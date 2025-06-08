@@ -1,5 +1,6 @@
 /** @jsx h */
-import { h, Component, render } from 'nano-jsx';
+import { h, Component, render } from 'preact';
+import { useState, useEffect } from 'preact/hooks';
 import 'pretty-json-custom-element';
 
 import './components/Collapsible';
@@ -20,37 +21,39 @@ class LaneList extends Component<{ origins: any }> {
   }
 }
 
-class App extends Component {
-  render() {
-    queueMicrotask(async () => {
-      const res = await fetch('/__inspector/api/application');
-      const data = await res.json();
+const App = () => {
+  const [appName, setAppName] = useState('');
+  const [origins, setOrigins] = useState<Origin[] | null>(null);
 
-      const title = data.appName ?? data.appId;
-      if (title) {
-        (document.querySelector('#application-name')! as HTMLElement).innerText = title;
-      }
-    });
+  useEffect(() => {
+    fetch('/__inspector/api/application')
+      .then((res) => res.json())
+      .then((data) => {
+        const title = data.appName ?? data.appId;
+        if (title) {
+          setAppName(title);
+          document.title = document.title + ' - ' + title;
+        }
+      });
+  }, []);
 
-    queueMicrotask(async () => {
-      const res = await fetch('/__inspector/api/origins');
-      const data = await res.json();
+  useEffect(() => {
+    fetch('/__inspector/api/origins')
+      .then((res) => res.json())
+      .then(setOrigins);
+  }, []);
 
-      render(<LaneList origins={data} />, document.getElementById('lane-list'));
-    });
-
-    return (
-      <div class="container">
-        <h1 class="page-title-bar">
-          <code>Hodr Inspector</code>
-          <code id="application-name"></code>
-        </h1>
-        <div id="lane-list">
-          <div>Loading lanes...</div>
-        </div>
+  return (
+    <div class="container">
+      <h1 class="page-title-bar">
+        <code>Hodr Inspector</code>
+        <code id="application-name">{appName}</code>
+      </h1>
+      <div id="lane-list">
+        {origins ? <LaneList origins={origins} /> : <div>Loading lanes...</div>}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 render(<App />, document.getElementById('app')!);

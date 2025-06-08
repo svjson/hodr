@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, render } from 'nano-jsx';
+import { h } from 'preact';
 import { StepModel } from '../model';
 
 const deselectAllSiblings = (nodeLmnt: HTMLElement) => {
@@ -16,20 +16,20 @@ export const StepTree = ({
 }: {
   step: StepModel;
   depth?: number;
-  onSelect: (container: HTMLElement, step: StepModel) => void;
+  onSelect: (step: StepModel) => void;
 }) => {
   const toggle = (nodeLmnt: HTMLElement, step: StepModel) => {
     deselectAllSiblings(nodeLmnt);
     nodeLmnt.closest('.step-header')!.classList.add('selected');
 
-    onSelect(nodeLmnt, step);
+    onSelect(step);
   };
 
   return (
     <div class={`step-row status-${step.state}`} style={`--depth: ${depth}`}>
       <div
         class="step-header entry-container"
-        onclick={(e: MouseEvent) => toggle(e.currentTarget as HTMLElement, step)}
+        onClick={(e: MouseEvent) => toggle(e.currentTarget as HTMLElement, step)}
       >
         <div class={`entry tree-node status-${step.state}`}>
           <span class="tree-node-icon">{step.children?.length ? '▶' : '•'}</span>{' '}

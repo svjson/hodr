@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, Component, render } from 'nano-jsx';
+import { h, Component, render } from 'preact';
 import { Origin } from '../model';
 import { InputEntry } from './InputEntry';
 

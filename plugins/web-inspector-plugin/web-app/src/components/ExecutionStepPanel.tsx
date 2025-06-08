@@ -1,7 +1,9 @@
 /** @jsx h */
-import { h } from 'nano-jsx';
+import { h, render, VNode } from 'preact';
 import { StepModel, MetaJournalEntry } from '../model';
 import { toggle } from './Expandable';
+import { applyExpansionState } from '../lib/pretty-json-state';
+import 'pretty-json-custom-element';
 
 interface SectionModel {
   lmnt: HTMLElement;
@@ -11,7 +13,13 @@ interface SectionModel {
   typeHint?: string;
 }
 
-const makeSection = (id: string, title: string, cardClass: string): HTMLElement => (
+const elementize = (vnode: VNode): HTMLElement => {
+  const wrapper = document.createElement('div');
+  render(vnode, wrapper);
+  return wrapper.firstElementChild as HTMLElement;
+};
+
+const makeSection = (id: string, title: string, cardClass: string): VNode<any> => (
   <div class="payload-panel collapsible" data-id={id}>
     <div class="expandable entry-container" onClick={toggle}>
       <div class="entry">
@@ -34,7 +42,7 @@ const addAbsentSections = (sectionContainer: HTMLElement, step: StepModel) => {
     let customEntry = sectionContainer.querySelector(`[data-id="${entry.id}"]`);
 
     if (!customEntry) {
-      customEntry = makeSection(entry.id, entry.title, 'journal-payload');
+      customEntry = elementize(makeSection(entry.id, entry.title, 'journal-payload'));
       lastEntry.parentElement?.insertBefore(customEntry, lastEntry.nextSibling);
       lastEntry = customEntry;
     }
@@ -78,6 +86,7 @@ const makeVisualModel = (sectionContainer: HTMLElement, step: StepModel): Sectio
 
 export const displayStepDetails = (sectionContainer: HTMLElement, step: StepModel) => {
   addAbsentSections(sectionContainer, step);
+
   const presentElements = makeVisualModel(sectionContainer, step);
 
   const prettyOpts = {
@@ -107,15 +116,15 @@ export const displayStepDetails = (sectionContainer: HTMLElement, step: StepMode
 
     if (data == null || data == undefined) {
       box.classList.add('no-data');
-      box.replaceChildren(<div class="italic muted">No data</div>);
+      box.replaceChildren(elementize(<div class="italic muted">No data</div>));
     } else {
       box.classList.remove('no-data');
 
-      let content = <div>{data}</div>;
+      let content = elementize(<div></div>);
       switch (typeHint) {
         case 'plaintext':
         case 'stacktrace':
-          content = (
+          content = elementize(
             <div class="scroll small">
               <code>
                 <pre>{data}</pre>
@@ -124,7 +133,7 @@ export const displayStepDetails = (sectionContainer: HTMLElement, step: StepMode
           );
           break;
         default:
-          content = (
+          content = elementize(
             <div class={`scroll ${typeHint === 'string' ? '' : 'nowrap'}`}>
               <pretty-json {...prettyOpts}>{JSON.stringify(data)}</pretty-json>
             </div>
@@ -157,49 +166,4 @@ export const ExecutionStepPanel = () => {
       {outputCard}
     </div>
   );
-};
-
-export const getExpansionState = (root: HTMLElement): Record<string, any> => {
-  const walk = (node: HTMLElement): Record<string, any> | null => {
-    const shadow = node.shadowRoot;
-    if (!shadow) return null;
-
-    const key = node.getAttribute('key') ?? '';
-    let childrenObj: Record<string, any> = {};
-
-    if (node.getAttribute('expand') === '1') {
-      shadow.querySelectorAll('pretty-json').forEach((child) => {
-        const result = walk(child as HTMLElement);
-        if (result) {
-          const [childKey, subTree] = Object.entries(result)[0];
-          childrenObj[childKey] = subTree;
-        }
-      });
-      return { [key]: childrenObj };
-    }
-
-    return null;
-  };
-
-  const result = walk(root);
-  return result?.[''] ?? {};
-};
-
-const applyExpansionState = (root: HTMLElement, state: any) => {
-  if (!state) return;
-
-  const walk = (node: HTMLElement, path: any) => {
-    const shadow = node.shadowRoot;
-    if (!shadow) return;
-
-    Object.keys(path).forEach((next) => {
-      const nextLmnt = shadow.querySelector(`pretty-json[key="${next}"]`);
-      if (nextLmnt) {
-        nextLmnt.setAttribute('expand', '1');
-        walk(nextLmnt as HTMLElement, path[next]);
-      }
-    });
-  };
-
-  walk(root, state);
 };

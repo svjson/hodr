@@ -1,9 +1,10 @@
 /** @jsx h */
-import { h } from 'nano-jsx';
-import { toggleExpandable } from './Expandable';
+import { h } from 'preact';
+import { useState } from 'preact/hooks';
 import { formatDate, juxt } from '../util';
 import { ExecutionPanel } from './ExecutionPanel';
-import { StepModel } from '../model.ts';
+import { ExecutionContext, StepModel } from '../model.ts';
+import { ChevronIcon } from './ChevronIcon.tsx';
 
 const STATUS_ICONS = {
   pending: '⏳',
@@ -42,28 +43,17 @@ const buildExecutionModel = (ctx: any) => {
   return model;
 };
 
-export const Execution = (props: { ctx: any }) => {
-  const { ctx } = props;
+export const Execution = ({ ctx }: { ctx: ExecutionContext<any> }) => {
+  const [expanded, setExpanded] = useState(false);
 
   const executionModel = buildExecutionModel(ctx);
 
   const startedAt = ctx.steps.length !== 0 ? formatDate(ctx.steps[0].startedAt) : '';
   const success = ctx.state === 'finalized';
 
-  const toggle = (lmnt: HTMLElement) => {
-    const content = toggleExpandable(lmnt)!;
-    if (!content.querySelector('.step-header.selected')) {
-      const first = content.querySelector('.step-header') as HTMLElement;
-      if (first) first.click();
-    }
-  };
-
   return (
     <div>
-      <div
-        class="list-row expandable"
-        onClick={(e: MouseEvent) => toggle(e.currentTarget as HTMLElement)}
-      >
+      <div class="list-row expandable" onClick={() => setExpanded(!expanded)}>
         <div class="entry-container full-width">
           <div class="entry">
             <span class="tag">{startedAt}</span>
@@ -76,11 +66,11 @@ export const Execution = (props: { ctx: any }) => {
             </span>
             <span class={success ? 'success hm-8' : 'error hm-8'}>{ctx.outputTopic}</span>
             <span>{STATUS_ICONS[ctx.state]}</span>
-            <span class="chevron-icon down">⮟</span>
+            <ChevronIcon expanded={expanded} />
           </div>
         </div>
       </div>
-      <div class="expandable-content hidden">
+      <div class={'expandable-content' + (expanded ? '' : ' hidden')}>
         <ExecutionPanel ctx={ctx} executionModel={executionModel} />
       </div>
     </div>
