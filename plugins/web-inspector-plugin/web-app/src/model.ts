@@ -2,10 +2,12 @@ import { StepMetadata, MetaJournalEntry, ExecutionContext } from '@hodr/core';
 
 export { StepMetadata, MetaJournalEntry, ExecutionContext };
 
+export type InputId = { name: string; type: string; variant: string };
+
 export type Origin = {
   name: string;
   type: string;
-  inputs: [{ name: string; type: string; variant: string }];
+  inputs: InputId[];
 };
 
 export interface StepModel {

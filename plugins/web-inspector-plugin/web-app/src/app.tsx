@@ -1,121 +1,67 @@
 /** @jsx h */
-import { h, render } from 'nano-jsx';
+import { h, Component, render } from 'nano-jsx';
 import 'pretty-json-custom-element';
 
 import { Execution } from './components/Execution';
 import { toggleExpandable } from './components/Expandable';
+import { InputEntry } from './components/InputEntry';
 import './components/Collapsible';
 import { Origin, ExecutionContext } from './model';
 
-const App = () => {
-  const el = (
-    <div class="container">
-      <h1 class="page-title-bar">
-        <code>Hodr Inspector</code>
-        <code id="application-name"></code>
-      </h1>
+class LaneList extends Component<{ origins: any }> {
+  render() {
+    const { origins } = this.props;
+
+    return (
       <div>
-        <div id="lane-list">Loading lanes...</div>
-      </div>
-    </div>
-  );
-
-  const ITEM_TYPES = {
-    input: {
-      uri: (item) =>
-        `origins/${item.origin}/input/${encodeURIComponent(item.input)}/${item.variant}/executions`,
-
-      renderList: (items: ExecutionContext<any>[]) => (
-        <div class="list-block">
-          {items.map((ctx) => (
-            <Execution ctx={ctx} />
-          ))}
-        </div>
-      ),
-    },
-  };
-
-  const subscribe = (type: string, item, content: HTMLElement) => {
-    queueMicrotask(async () => {
-      const itemType = ITEM_TYPES[type];
-
-      const res = await fetch(`/__inspector/api/${itemType.uri(item)}`);
-      const data = await res.json();
-
-      content.replaceChildren(
-        data.length ? (
-          itemType.renderList.call(itemType, data)
-        ) : (
-          <div class="list-block muted center italic">
-            <div class="vp-8">No executions</div>
-          </div>
-        )
-      );
-    });
-  };
-
-  const toggleInput = (lmnt: HTMLElement, origin: Origin, input) => {
-    const content = toggleExpandable(lmnt);
-    subscribe(
-      'input',
-      { origin: origin.name, input: input.name, variant: input.variant },
-      content!
-    );
-  };
-
-  queueMicrotask(async () => {
-    const res = await fetch('/__inspector/api/application');
-    const data = await res.json();
-
-    const title = data.appName ?? data.appId;
-    if (title) {
-      (document.querySelector('#application-name')! as HTMLElement).innerText = title;
-    }
-  });
-
-  queueMicrotask(async () => {
-    const res = await fetch('/__inspector/api/origins');
-    const data = await res.json();
-
-    const list = (
-      <div>
-        {data.map((origin: Origin) => (
+        {origins.map((origin: Origin) => (
           <div class="card">
             <h2>
               <strong>{origin.type}</strong> — <code>{origin.name}</code>
             </h2>
             <div>
               {origin.inputs.map((input) => (
-                <div>
-                  <div
-                    class="expandable entry-container full-width card inverted"
-                    onClick={(e: MouseEvent) =>
-                      toggleInput(e.currentTarget as HTMLElement, origin, input)
-                    }
-                  >
-                    <div class="entry" key={input.name}>
-                      <span class="tag">{input.type}</span>
-                      <span class="tag method">{input.variant}</span>
-                      {input.name}
-                    </div>
-                    <span class="chevron-icon down">⮟</span>
-                  </div>
-                  <div class="expandable-content hidden">Loading...</div>
-                </div>
+                <InputEntry origin={origin} input={input} />
               ))}
             </div>
           </div>
         ))}
       </div>
     );
+  }
+}
 
-    const target = document.getElementById('lane-list');
-    if (target) {
-      target.replaceWith(list);
-    }
-  });
+class App extends Component {
+  render() {
+    queueMicrotask(async () => {
+      const res = await fetch('/__inspector/api/application');
+      const data = await res.json();
 
-  return el;
-};
+      const title = data.appName ?? data.appId;
+      if (title) {
+        (document.querySelector('#application-name')! as HTMLElement).innerText = title;
+      }
+    });
+
+    queueMicrotask(async () => {
+      const res = await fetch('/__inspector/api/origins');
+      const data = await res.json();
+
+      render(<LaneList origins={data} />, document.getElementById('lane-list'));
+    });
+
+    return (
+      <div class="container">
+        <h1 class="page-title-bar">
+          <code>Hodr Inspector</code>
+          <code id="application-name"></code>
+        </h1>
+        <div id="lane-list">
+          <div>Loading lanes...</div>
+        </div>
+      </div>
+    );
+  }
+}
 
 render(<App />, document.getElementById('app')!);
