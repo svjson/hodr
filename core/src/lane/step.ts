@@ -49,14 +49,19 @@ export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
  * Usage:
  *
  * Using a directive map:
+ * ```
  * .extract({
  *   threadId: 'params',
  *   account: 'session.account',
  *   comment: 'body',
  * })
+ * ```
  *
- * Using a string:
+ * Using string/object path expressions:
+ * ```
  * .extract('session.account')
+ * .extract('comments[id=commentId]')
+ * ```
  */
 export class ExtractStep<I, T> implements HodrStep<I, T> {
   name = 'extract';
