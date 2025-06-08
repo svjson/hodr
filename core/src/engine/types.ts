@@ -90,11 +90,6 @@ export class HodrError extends Error {
   }
 }
 
-/**
- * Can't say I remember no At Attin.
- */
-export type ObjectPathReference = string | string[];
-
 export interface DestinationAdapter<ParamsType = unknown> {
   invoke(ctx: ExecutionContext<unknown>, path: string, params?: ParamsType): Promise<any>;
 }

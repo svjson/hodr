@@ -15,7 +15,6 @@ import type {
   HttpClientConfig,
   HttpClientProvider,
   HttpStatusPattern,
-  ObjectPathReference,
   StatusCondMap,
 } from '../engine';
 import { HodrError, extractPath, httpStatusMatcher } from '../engine';
@@ -105,6 +104,14 @@ export abstract class BaseLaneBuilder<Payload, Self extends BaseLaneBuilder<any,
    */
   expect(
     pred: ExpectPredicateFunction<Payload>,
+    errorCode: InternalStatusErrorCode | HttpStatusErrorCode
+  ): this;
+  expect(
+    expression: string,
+    errorCode: InternalStatusErrorCode | HttpStatusErrorCode
+  ): this;
+  expect(
+    pred: ExpectPredicateFunction<Payload> | string,
     errorCode: InternalStatusErrorCode | HttpStatusErrorCode
   ): this {
     this.lane.steps.push(new ExpectStep(this.root, pred, errorCode));
@@ -351,11 +358,11 @@ export class HttpResponseLaneBuilder<
     return this;
   }
 
-  extractResponseBody<T = any>(path?: ObjectPathReference): PB {
+  extractResponseBody(expression?: string): PB {
     this.lane.steps.push({
       name: 'extract-http-body',
-      execute: (ctx: ExecutionContext<HttpResponse>) => {
-        return Promise.resolve(extractPath(ctx.payload.body, path) as T);
+      execute: async (ctx: ExecutionContext<HttpResponse>) => {
+        return extractPath(ctx.payload.body, expression!);
       },
     });
     return this.parent;

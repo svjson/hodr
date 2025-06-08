@@ -176,7 +176,6 @@ describe('TransformStep', () => {
     }));
 
     // When
-    console.log(ctx.payload);
     const result = await step.execute(ctx);
 
     // Then

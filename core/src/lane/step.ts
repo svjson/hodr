@@ -1,4 +1,4 @@
-import { ExecutionContext } from '../context';
+import { AtomCollection, ExecutionContext } from '../context';
 import {
   type HttpRequest,
   type HttpResponse,
@@ -18,6 +18,7 @@ import {
   InternalStatusErrorCode,
   TransformFunction,
 } from './types';
+import { opath, OPathOperation, OPathReporter } from '../engine';
 
 /* Step for calling a named downstream HTTP Destination */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -63,7 +64,27 @@ export class ExtractStep<I, T> implements HodrStep<I, T> {
   constructor(readonly directive: ExtractionMap | string) {}
 
   async execute(ctx: ExecutionContext<I>): Promise<T> {
-    return extractMap(ctx.payload, this.directive);
+    const ops: OPathOperation[] = [];
+
+    const result = extractMap(
+      ctx.payload,
+      this.directive,
+      Object.assign({}, ctx.payload, ctx.atoms()),
+      (op: OPathOperation) => ops.push(op)
+    );
+
+    if (ops.length) {
+      ctx.addJournalEntry({
+        id: 'extract-comparisons',
+        title: 'Extract Comparisons',
+        entry: ops.map((op) => ({
+          comparison: op.desc,
+          result: op.result,
+        })),
+      });
+    }
+
+    return result;
   }
 }
 
@@ -101,14 +122,32 @@ export class ExpectStep<T> implements HodrStep<T, T> {
   name = 'expect';
   internalErrorCode: InternalStatusErrorCode;
   httpErrorCode: HttpStatusErrorCode;
+  predicate: ExpectPredicateFunction<T>;
 
   constructor(
     private root: () => Hodr,
-    private predicate: ExpectPredicateFunction<T>,
+    predicate: ExpectPredicateFunction<T> | string,
     private errorCode: InternalStatusErrorCode | HttpStatusErrorCode,
     name?: string
   ) {
     this.name = name || this.name;
+
+    if (typeof predicate === 'string') {
+      const compiled = opath.parseAndCompile(predicate);
+      this.predicate = (obj: any, ctx: ExecutionContext<any>, atoms: AtomCollection) => {
+        return compiled(obj, Object.assign({}, ctx.payload, atoms), (op) => {
+          if (op.type === 'compare') {
+            ctx.addJournalEntry({
+              id: predicate,
+              title: `Expression Comparison: ${predicate}`,
+              entry: op,
+            });
+          }
+        });
+      };
+    } else {
+      this.predicate = predicate;
+    }
 
     this.internalErrorCode =
       typeof this.errorCode === 'string'

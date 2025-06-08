@@ -9,6 +9,11 @@ export { executeLane } from './execution';
 export { memoryTracker } from './tracker';
 export { extractMap, extractPath, mapStatusCode } from './transform';
 export { type HttpStatusPattern, httpStatusMatcher } from './validate';
+export {
+  default as opath,
+  Operation as OPathOperation,
+  OperationReporter as OPathReporter,
+} from './object-path';
 
 export type {
   DestinationAdapter,
@@ -18,7 +23,6 @@ export type {
   HttpClientProvider,
   InitialStepExecution,
   MetaJournalEntry,
-  ObjectPathReference,
   Tracker,
   StatusCondEntry,
   StatusCondMap,

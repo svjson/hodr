@@ -1,34 +1,38 @@
-import {
-  ExtractionMap,
-  ObjectPathReference,
-  StatusCondEntry,
-  StatusCondMap,
-} from './types';
+import { ExtractionMap, StatusCondEntry, StatusCondMap } from './types';
 
-export const extractPath = (obj: any, pathRef?: ObjectPathReference): any => {
-  if (!obj || !pathRef) {
+import opath, { CompiledExpression, OperationReporter } from './object-path';
+
+export const extractPath = (
+  obj: any,
+  expression: string,
+  symbolContext: Record<string, any> = {},
+  reporter?: OperationReporter
+): any => {
+  if (!obj || !expression) {
     return obj;
   }
 
-  const parts: string[] = typeof pathRef === 'string' ? pathRef.split('.') : pathRef;
+  const fn: CompiledExpression = opath.parseAndCompile(expression);
 
-  return parts.reduce<unknown>((result, key) => {
-    if (result == null || typeof result !== 'object') return undefined;
-    return (result as Record<string, unknown>)[key];
-  }, obj);
+  return fn(obj, symbolContext, reporter);
 };
 
-export const extractMap = (obj: any, directive: ExtractionMap | string): any => {
+export const extractMap = (
+  obj: any,
+  directive: ExtractionMap | string,
+  symbolContext: Record<string, any> = {},
+  reporter?: OperationReporter
+): any => {
   if (typeof directive === 'string') {
-    return extractPath(obj, directive);
+    return extractPath(obj, directive, symbolContext, reporter);
   }
 
   const extracted: Record<string, any> = {};
   for (const [key, path] of Object.entries(directive)) {
     if (typeof path === 'string') {
-      extracted[key] = extractPath(obj, path);
+      extracted[key] = extractPath(obj, path, symbolContext, reporter);
     } else {
-      extracted[key] = extractMap(obj, path);
+      extracted[key] = extractMap(obj, path, symbolContext, reporter);
     }
   }
   return extracted;
