@@ -1,7 +1,7 @@
 import { ExecutionContext } from './context';
 import { Tracker, Validator } from './engine';
 import { Destination, DestinationBuilder, ModuleOrigin, Origin, Usable } from './lane';
-import { LaneBuilder } from './lane/builder';
+import { GenericLaneBuilder } from './lane/builder';
 import { HodrRouter } from './router';
 
 /*
@@ -25,7 +25,7 @@ export interface Hodr {
   validators: Validator[];
 
   module(name: string): ModuleOrigin;
-  function(name: string): LaneBuilder;
+  function(name: string): GenericLaneBuilder;
   destination(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 

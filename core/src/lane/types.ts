@@ -1,7 +1,7 @@
 import { ExecutionContext, AtomCollection } from '../context';
 import { HttpClientConfig, HttpClientProvider, InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
-import { LaneBuilder } from './builder';
+import { BaseLaneBuilder, HttpDestinationLaneBuilder } from './builder';
 import { Target } from './destination';
 
 export interface Lane {
@@ -122,10 +122,10 @@ export interface HttpClientDestinationBuilderStub {
 }
 
 export interface HttpClientDestinationBuilder {
-  target<T = any>(name: string): LaneBuilder<T>;
+  target<T = any>(name: string): HttpDestinationLaneBuilder<T>;
   target<T = any>(
     name: string,
-    configurator: (lane: LaneBuilder<T>) => void
+    configurator: (lane: HttpDestinationLaneBuilder<T>) => void
   ): HttpClientDestinationBuilder;
 }
 

@@ -22,4 +22,5 @@ export type {
   UsableType,
 } from './types';
 
+export { GenericLaneBuilder, HodrDestinationBuilder } from './builder';
 export { AbstractInput, FunctionInput, ModuleOrigin } from './origin';

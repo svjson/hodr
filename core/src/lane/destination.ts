@@ -9,7 +9,7 @@ export class HodrDestination<T = unknown, Params = unknown> implements Destinati
 
   constructor(
     readonly root: () => Hodr,
-    readonly name?: string
+    readonly name: string
   ) {}
 
   async invoke(ctx: ExecutionContext<T>, path: string, params: Params): Promise<any> {

@@ -2,7 +2,6 @@ import type { ExecutionContext } from '../context';
 import type {
   HttpClient,
   HttpResponse,
-  HttpRequest,
   RequestParameters,
   HttpMethod,
   HttpStatusErrorCode,
@@ -45,30 +44,37 @@ import type {
 } from './types';
 
 /**
- * The main fluent builder for setting up the chain of steps and processing that make up
- * up a lane/unit-of-work.
+ * The abstract base type for fluent lane builders, used to set up and configure
+ * the chain of processing steps that make up a {@link Lane}.
+ *
+ * This base contains methods for creating all context-independent steps for extracting,
+ * transforming and validating a payload.
  */
-export class LaneBuilder<Payload = any> {
+export abstract class BaseLaneBuilder<Payload, Self extends BaseLaneBuilder<any, any>> {
   constructor(
     protected root: () => Hodr,
     public lane: Lane
   ) {}
 
+  protected self<O>(): Self {
+    throw new Error('This is a template method.');
+  }
+
   /** Register an extract step */
-  extract<T>(directive: ExtractionMap | string): LaneBuilder<T> {
-    this.lane.steps.push(new ExtractStep(directive));
-    return new LaneBuilder<T>(this.root, this.lane);
+  extract<Payload>(directive: ExtractionMap | string): Self {
+    this.lane.steps.push(new ExtractStep<Payload, any>(directive));
+    return this.self<any>();
   }
 
   /** Register a transform step */
-  transform<O>(fn: TransformFunction<Payload, O>): LaneBuilder<O>;
-  transform<I, O>(path: string, fn: TransformFunction<Payload, O>): LaneBuilder<O>;
+  transform<O>(fn: TransformFunction<Payload, O>): Self;
+  transform<Payload, O>(path: string, fn: TransformFunction<Payload, O>): Self;
   transform<O>(
     arg1: TransformFunction<Payload, O> | string,
     arg2?: TransformFunction<Payload, O>
-  ): LaneBuilder<O> {
+  ): Self {
     this.lane.steps.push(new TransformStep<Payload, O>(arg1, arg2));
-    return new LaneBuilder<O>(this.root, this.lane);
+    return this.self<O>();
   }
 
   /** Register a validation step */
@@ -87,7 +93,16 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  /** Register an expect step */
+  /**
+   * Register an expect step.
+   *
+   * Can be used for instant bail-out whenever the conditions for a process are not met,
+   * according to arbitrary business logic or system invariants.
+   *
+   * @param pred - The predicate function, returning `true` if the expectation is fulfilled
+   *               or otherwise `false`.
+   @ @param errorCode - The error code to raise in case the expectation is not fulfilled.
+   */
   expect(
     pred: ExpectPredicateFunction<Payload>,
     errorCode: InternalStatusErrorCode | HttpStatusErrorCode
@@ -96,6 +111,11 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
+  /**
+   * Register an expect step verifying that the payload is currently not nil.
+   *
+   * Syntactic sugar for ```.expect((v) => v !== null && v !== undefined)````
+   */
   expectValue(errorCode: InternalStatusErrorCode | HttpStatusErrorCode): this {
     this.lane.steps.push(
       new ExpectStep(
@@ -108,17 +128,25 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  literal<T = any>(value: T): this {
+  /**
+   * Supply a value for `Payload` unrelated to the Lane processing chain.
+   *
+   * No processing is applied to `value`.
+   */
+  literal<T = any>(value: T): Self {
     this.lane.steps.push({
       name: 'literal',
       async execute(_ctx: ExecutionContext<any>): Promise<T> {
         return value;
       },
     });
-    return this;
+    return this.self<T>();
   }
 
-  dispatch(destination: string, target: string): this {
+  /**
+   * Register a dispatch to/invocation of a {@link Target} on a {@link Destination}.
+   */
+  dispatch(destination: string, target: string): Self {
     const dest = this.root().destinations[destination];
     if (!dest) {
       throw new HodrError(
@@ -136,6 +164,15 @@ export class LaneBuilder<Payload = any> {
       this.lane.steps.push(step);
     }
 
+    return this.self<any>();
+  }
+
+  /**
+   * Register a destination invocation step
+   * FIXME: Deprecated in favor of {@link dispatch} ?
+   */
+  invokeDestination(destination: string, path: string): this {
+    this.lane.steps.push(new CallStep(destination, path));
     return this;
   }
 
@@ -151,94 +188,180 @@ export class LaneBuilder<Payload = any> {
     return this;
   }
 
-  private _httpStep(
+  protected _httpStep<PB extends BaseLaneBuilder<any, any>>(
+    self: BaseLaneBuilder<any, any>,
     method: HttpMethod,
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
+  ): HttpResponseLaneBuilder<PB> {
     this.lane.steps.push(
-      new CallStep(destination, path, Object.assign(params ?? {}, { method }))
+      new CallStep(destination, uri, Object.assign(params ?? {}, { method }))
     );
-    return new HttpResponseLaneBuilder(this.root, this.lane);
+    return new HttpResponseLaneBuilder<PB>(self as PB, this.root, this.lane);
+  }
+}
+
+/**
+ * Adds http step builder function for building lanes that are not themselves
+ * part of an HttpClient Destination.
+ */
+export class GenericLaneBuilder<Payload = any> extends BaseLaneBuilder<
+  Payload,
+  GenericLaneBuilder<Payload>
+> {
+  constructor(
+    protected root: () => Hodr,
+    public lane: Lane
+  ) {
+    super(root, lane);
+  }
+
+  protected override self<O>(): GenericLaneBuilder<O> {
+    return this as unknown as GenericLaneBuilder<O>;
   }
 
   httpGet(
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
-    return this._httpStep('GET', destination, path, params);
+  ): HttpResponseLaneBuilder<GenericLaneBuilder<HttpResponse>> {
+    return this._httpStep<GenericLaneBuilder<HttpResponse>>(
+      this,
+      'GET',
+      destination,
+      uri,
+      params
+    );
   }
 
   httpPost(
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
-    return this._httpStep('POST', destination, path, params);
+  ): HttpResponseLaneBuilder<GenericLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'POST', destination, uri, params);
   }
 
   httpPut(
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
-    return this._httpStep('PUT', destination, path, params);
+  ): HttpResponseLaneBuilder<GenericLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'PUT', destination, uri, params);
   }
 
   httpPatch(
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
-    return this._httpStep('PATCH', destination, path, params);
+  ): HttpResponseLaneBuilder<GenericLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'PATCH', destination, uri, params);
   }
 
   httpDelete(
     destination: string,
-    path: string,
+    uri: string,
     params?: RequestParameters
-  ): HttpResponseLaneBuilder {
-    return this._httpStep('DELETE', destination, path, params);
-  }
-
-  /** Register a destination invocation step */
-  invokeDestination(destination: string, path: string): LaneBuilder<any> {
-    this.lane.steps.push(new CallStep(destination, path));
-    return this;
+  ): HttpResponseLaneBuilder<GenericLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'DELETE', destination, uri, params);
   }
 }
 
-export class RouterLaneBuilder extends LaneBuilder<HttpRequest> {}
+/**
+ * Adds http step builder function for building lanes that are themselves
+ * part of an HttpClient Destination and can therefore forgo specifying the
+ * destination responsible for the call.
+ */
+export class HttpDestinationLaneBuilder<Payload = any> extends BaseLaneBuilder<
+  Payload,
+  HttpDestinationLaneBuilder<Payload>
+> {
+  constructor(
+    protected root: () => Hodr,
+    public lane: Lane,
+    private destination: string
+  ) {
+    super(root, lane);
+  }
 
-export class HttpResponseLaneBuilder extends LaneBuilder<HttpResponse> {
-  expectHttpOk(): HttpResponseLaneBuilder {
+  httpGet(
+    uri: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'GET', this.destination, uri, params);
+  }
+
+  httpPost(
+    uri: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'POST', this.destination, uri, params);
+  }
+
+  httpPut(
+    uri: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'PUT', this.destination, uri, params);
+  }
+
+  httpPatch(
+    uri: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'PATCH', this.destination, uri, params);
+  }
+
+  httpDelete(
+    uri: string,
+    params?: RequestParameters
+  ): HttpResponseLaneBuilder<HttpDestinationLaneBuilder<HttpResponse>> {
+    return this._httpStep(this, 'DELETE', this.destination, uri, params);
+  }
+}
+
+/**
+ * Specialized lane builder sub-type added steps for operation on and verifying
+ * the HttpResponse returned from an HttpOperation.
+ */
+export class HttpResponseLaneBuilder<
+  PB extends BaseLaneBuilder<any, PB>,
+> extends BaseLaneBuilder<HttpResponse, HttpResponseLaneBuilder<PB>> {
+  constructor(
+    readonly parent: PB,
+    readonly root: () => Hodr,
+    public lane: Lane
+  ) {
+    super(root, lane);
+  }
+
+  expectHttpOk(): HttpResponseLaneBuilder<PB> {
     this.lane.steps.push(httpStatusMatcher(200));
     return this;
   }
 
-  expectHttpSuccess(): HttpResponseLaneBuilder {
+  expectHttpSuccess(): HttpResponseLaneBuilder<PB> {
     this.lane.steps.push(httpStatusMatcher(new HttpStatusRange(200, 220)));
     return this;
   }
 
-  expectHttpStatus(...statusPattern: HttpStatusPattern[]): HttpResponseLaneBuilder {
+  expectHttpStatus(...statusPattern: HttpStatusPattern[]): HttpResponseLaneBuilder<PB> {
     this.lane.steps.push(httpStatusMatcher(...statusPattern));
     return this;
   }
 
-  extractResponseBody<T = any>(path?: ObjectPathReference) {
+  extractResponseBody<T = any>(path?: ObjectPathReference): PB {
     this.lane.steps.push({
       name: 'extract-http-body',
       execute: (ctx: ExecutionContext<HttpResponse>) => {
         return Promise.resolve(extractPath(ctx.payload.body, path) as T);
       },
     });
-    return new LaneBuilder<T>(this.root, this.lane);
+    return this.parent;
   }
 
-  mapStatusCode(statusMap: StatusCondMap): HttpResponseLaneBuilder {
+  mapStatusCode(statusMap: StatusCondMap): HttpResponseLaneBuilder<PB> {
     this.lane.steps.push(new MapStatusCodeStep(statusMap));
     return this;
   }
@@ -286,17 +409,21 @@ class HodrHttpClientDestinationBuilder implements HttpClientDestinationBuilder {
     private destination: HodrDestination
   ) {}
 
-  target<T = any>(name: string): LaneBuilder<T>;
+  target<T = any>(name: string): HttpDestinationLaneBuilder<T>;
   target<T = any>(
     name: string,
-    configurator: (lane: LaneBuilder<T>) => void
+    configurator: (lane: HttpDestinationLaneBuilder<T>) => void
   ): HttpClientDestinationBuilder;
   target<T = any>(
     name: string,
-    configurator?: (lane: LaneBuilder<T>) => void
-  ): LaneBuilder<T> | HttpClientDestinationBuilder {
+    configurator?: (lane: HttpDestinationLaneBuilder<T>) => void
+  ): HttpDestinationLaneBuilder<T> | HttpClientDestinationBuilder {
     const target = this.destination.createTarget(name);
-    const builder = new LaneBuilder<T>(this.root, target.lane);
+    const builder = new HttpDestinationLaneBuilder<T>(
+      this.root,
+      target.lane,
+      this.destination.name
+    );
 
     if (configurator) {
       configurator(builder);

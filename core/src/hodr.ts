@@ -1,7 +1,7 @@
 import { ExecutionContext } from './context';
 import { Tracker, Validator } from './engine';
 import { Destination, DestinationBuilder, ModuleOrigin, Origin, Usable } from './lane';
-import { HodrDestinationBuilder, LaneBuilder } from './lane/builder';
+import { HodrDestinationBuilder, GenericLaneBuilder } from './lane';
 import { HodrDestination } from './lane/destination';
 import { HodrRouter } from './router';
 import { DefaultHodrRouter } from './router/router';
@@ -30,7 +30,7 @@ class Hodr implements HodrInterface {
     return moduleOrigin;
   }
 
-  function(name: string): LaneBuilder {
+  function(name: string): GenericLaneBuilder {
     return this.module(`${name}-module`).function(name);
   }
 

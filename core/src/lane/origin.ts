@@ -2,7 +2,7 @@ import { ExecutionContext } from '../context';
 import { HodrContext } from '../context/context';
 import { executeLane, HodrError, InitialStepExecution } from '../engine';
 import { Hodr } from '../types';
-import { LaneBuilder } from './builder';
+import { GenericLaneBuilder } from './builder';
 import { Input, Lane, Origin } from './types';
 
 export abstract class AbstractInput<T> implements Input<T> {
@@ -50,11 +50,11 @@ export class ModuleOrigin implements Origin {
     return Object.values(this.functions);
   }
 
-  function(name: string): LaneBuilder {
+  function(name: string): GenericLaneBuilder {
     const lane = { root: this.root, steps: [] };
     const func = new FunctionInput(this.root, this.name, name, lane);
     this.functions[name] = func;
-    return new LaneBuilder(this.root, lane);
+    return new GenericLaneBuilder(this.root, lane);
   }
 
   getFunction<I = unknown, O = unknown>(name: string): (arg: I) => O {

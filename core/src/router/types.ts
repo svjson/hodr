@@ -1,7 +1,7 @@
 import { ExecutionContext } from '../context';
 import { HodrError } from '../engine';
 import { Origin } from '../lane';
-import { RouterLaneBuilder } from '../lane/builder';
+import { GenericLaneBuilder } from '../lane';
 import { HodrRoute } from './route';
 
 export interface HodrRouter extends Origin {
@@ -11,13 +11,13 @@ export interface HodrRouter extends Origin {
 
   formatError(formatterFn: (params: HodrRouterErrorFormatterParams) => any): HodrRouter;
 
-  get(path: string): RouterLaneBuilder;
+  get(path: string): GenericLaneBuilder;
 
-  post(path: string): RouterLaneBuilder;
+  post(path: string): GenericLaneBuilder;
 
-  put(path: string): RouterLaneBuilder;
+  put(path: string): GenericLaneBuilder;
 
-  delete(path: string): RouterLaneBuilder;
+  delete(path: string): GenericLaneBuilder;
 }
 
 export interface HodrRouterFinalizationParams {
