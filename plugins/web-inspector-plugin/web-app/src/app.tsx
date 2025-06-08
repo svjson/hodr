@@ -2,11 +2,9 @@
 import { h, Component, render } from 'nano-jsx';
 import 'pretty-json-custom-element';
 
-import { Execution } from './components/Execution';
-import { toggleExpandable } from './components/Expandable';
-import { InputEntry } from './components/InputEntry';
 import './components/Collapsible';
-import { Origin, ExecutionContext } from './model';
+import { Origin } from './model';
+import { OriginCard } from './components/OriginCard';
 
 class LaneList extends Component<{ origins: any }> {
   render() {
@@ -15,16 +13,7 @@ class LaneList extends Component<{ origins: any }> {
     return (
       <div>
         {origins.map((origin: Origin) => (
-          <div class="card">
-            <h2>
-              <strong>{origin.type}</strong> — <code>{origin.name}</code>
-            </h2>
-            <div>
-              {origin.inputs.map((input) => (
-                <InputEntry origin={origin} input={input} />
-              ))}
-            </div>
-          </div>
+          <OriginCard origin={origin} />
         ))}
       </div>
     );

@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, Component, render } from 'nano-jsx';
-import { InputId, Origin } from '../model';
+import { ExecutionContext, InputId, Origin } from '../model';
 import { Execution } from './Execution';
 
 type InputEntryProps = { origin: Origin; input: InputId };
@@ -29,9 +29,11 @@ export class InputEntry extends Component<InputEntryProps> {
     const expanded = !this.state.expanded;
     this.setState({ expanded: expanded });
 
-    if (expanded) this.fetchExecutions();
-
-    this.update();
+    if (expanded) {
+      this.fetchExecutions();
+    } else {
+      this.update();
+    }
   };
 
   render() {
@@ -52,7 +54,7 @@ export class InputEntry extends Component<InputEntryProps> {
           {executions ? (
             executions.length ? (
               <div class="list-block">
-                {executions.map((ctx) => (
+                {executions.map((ctx: ExecutionContext<any>) => (
                   <Execution ctx={ctx} />
                 ))}
               </div>
