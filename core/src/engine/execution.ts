@@ -15,6 +15,7 @@ export const executeLane = async <T = unknown>(
       startedAt: Date.now(),
       metadata: { input: {}, journal: [], output: {} },
       state: 'pending',
+      forks: [],
     };
 
     ctx.steps.push(execStep);

@@ -9,16 +9,23 @@ import {
   httpErrorStatusToInternal,
   httpStatusToInternal,
 } from '../destination';
-import { StatusCondMap, ExtractionMap, extractMap, HodrError } from '../engine';
+import {
+  StatusCondMap,
+  ExtractionMap,
+  extractMap,
+  HodrError,
+  executeLane,
+} from '../engine';
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
 import {
   ExpectPredicateFunction,
   HodrStep,
   InternalStatusErrorCode,
+  Lane,
   TransformFunction,
 } from './types';
-import { opath, OPathOperation, OPathReporter } from '../engine';
+import { opath, OPathOperation } from '../engine';
 
 /* Step for calling a named downstream HTTP Destination */
 export class CallStep implements HodrStep<HttpRequest, HttpResponse> {
@@ -115,7 +122,7 @@ export class TransformStep<I, O> implements HodrStep<I, O> {
       return {
         ...ctx.payload,
         [this.path]: await this.fn(ctx.payload, ctx, ctx.atoms()),
-      };
+      } as O;
     }
 
     return await this.fn(ctx.payload, ctx, ctx.atoms());
@@ -225,33 +232,41 @@ export class ValidateStep<T> implements HodrStep<T, T> {
   }
 }
 
-type ExtractOutput<S> = S extends HodrStep<any, infer O> ? O : never;
-
-export class ParallelStep<I, S extends readonly HodrStep<I, any>[]>
-  implements HodrStep<I, { [K in keyof S]: ExtractOutput<S[K]> }>
+/* Step for forking execution into parallel lanes */
+export class ParallelStep<I = unknown, O extends readonly any[] = readonly unknown[]>
+  implements HodrStep<I, O>
 {
   name = 'parallel';
 
-  constructor(private steps: S) {}
+  constructor(
+    private root: () => Hodr,
+    private lanes: Lane[]
+  ) {}
 
-  async execute(
-    ctx: ExecutionContext<I>
-  ): Promise<{ [K in keyof S]: ExtractOutput<S[K]> }> {
-    const results = await Promise.all(this.steps.map((step) => step.execute(ctx)));
-    return results as { [K in keyof S]: ExtractOutput<S[K]> };
+  async execute(ctx: ExecutionContext<I>): Promise<O> {
+    const results = await Promise.all(
+      this.lanes.map(async (lane) => {
+        const subCtx = ctx.fork(lane);
+        await executeLane(this.root, subCtx);
+        return subCtx.payload;
+      })
+    );
+    return results as any;
   }
 }
 
 /* Step for executing a sequence of steps in order */
-export class SequenceStep<I, T> implements HodrStep {
+export class SequenceStep<I, O> implements HodrStep<I, O> {
   name = 'sequence';
 
   constructor(private steps: HodrStep[]) {}
 
-  async execute(ctx: ExecutionContext<T>): Promise<void> {
+  async execute(ctx: ExecutionContext<I>): Promise<O> {
+    let result = null;
     for (const step of this.steps) {
-      await step.execute(ctx);
+      result = await step.execute(ctx);
     }
+    return result as O;
   }
 }
 
@@ -262,8 +277,8 @@ export class MapStatusCodeStep implements HodrStep<HttpResponse, HttpResponse> {
   constructor(private statusMap: StatusCondMap) {}
 
   async execute(ctx: ExecutionContext<HttpResponse>): Promise<HttpResponse> {
-    const statusCode = mapStatusCode(ctx.payload!.statusCode, this.statusMap);
-    ctx.payload!.statusCode = statusCode;
+    const statusCode = mapStatusCode(ctx.payload.statusCode, this.statusMap);
+    ctx.payload.statusCode = statusCode;
 
     if (ctx.payload?.statusCode >= 200 && ctx.payload?.statusCode < 300) {
       ctx.metadata.canonicalStatus = {
@@ -274,6 +289,6 @@ export class MapStatusCodeStep implements HodrStep<HttpResponse, HttpResponse> {
       };
     }
 
-    return ctx.payload!;
+    return ctx.payload;
   }
 }

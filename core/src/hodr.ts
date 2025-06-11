@@ -30,7 +30,7 @@ class Hodr implements HodrInterface {
     return moduleOrigin;
   }
 
-  function(name: string): GenericLaneBuilder {
+  function<Payload = any>(name: string): GenericLaneBuilder<Payload> {
     return this.module(`${name}-module`).function(name);
   }
 

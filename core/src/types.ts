@@ -25,7 +25,7 @@ export interface Hodr {
   validators: Validator[];
 
   module(name: string): ModuleOrigin;
-  function(name: string): GenericLaneBuilder;
+  function<Payload = any>(name: string): GenericLaneBuilder<Payload>;
   destination(name: string): DestinationBuilder;
   router(name: string): HodrRouter;
 

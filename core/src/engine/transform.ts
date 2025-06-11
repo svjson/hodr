@@ -1,6 +1,7 @@
 import { ExtractionMap, StatusCondEntry, StatusCondMap } from './types';
 
 import opath, { CompiledExpression, OperationReporter } from './object-path';
+import { HttpStatusCode } from '../destination';
 
 export const extractPath = (
   obj: any,
@@ -38,7 +39,10 @@ export const extractMap = (
   return extracted;
 };
 
-export const mapStatusCode = (statusCode: number, map: StatusCondMap): number => {
+export const mapStatusCode = (
+  statusCode: HttpStatusCode,
+  map: StatusCondMap
+): HttpStatusCode => {
   let candidate: StatusCondEntry | null = null;
 
   for (const clause of map) {

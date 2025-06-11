@@ -4,7 +4,7 @@ import {
   StepExecution,
   StepStatus,
 } from '../engine';
-import { MetaJournalEntry } from '../engine/types';
+import { MetaJournalEntry } from '../engine';
 import { Lane } from '../lane';
 
 export interface OriginId {
@@ -24,24 +24,24 @@ export type EndStateStatus = 'finalized' | 'error';
  */
 export type ContextStatus = 'running' | EndStateStatus;
 
-interface ContextFields {
+export interface BaseExecutionContextParams<Payload = unknown> {
+  atoms?: AtomCollection;
   origin: OriginId;
-
-  /** The execution plan and its runtime state. */
   lane: Lane;
-  initialStep: InitialStepExecution;
-  currentStep: StepExecution | null;
+  currentStep?: StepExecution;
   finalizeStep?: FinalizeStepExecution;
-
   /** The current state of the main piece of data of an execution */
-  payload?: any;
-
+  payload?: Payload;
   /**
    * Anything-goes data-dump for the execution. This is where things that have
    * not yet been feature-ized go. Avoid relying on it if possible.
    */
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
+}
 
+export interface ExecutionContextParams<Payload = unknown>
+  extends BaseExecutionContextParams<Payload> {
+  initialStep: InitialStepExecution;
   /**
    * Description-by-example of the input/origin and execution output. Probably added for
    * the benefit of the Web Inspector.
@@ -50,14 +50,14 @@ interface ContextFields {
    * FIXME: Should this simply live in the metadata blob?
    * TODO: Is outputTopic actually even used by anything?
    */
-  inputTopic: string;
+  inputTopic?: string;
   outputTopic?: string;
 }
 
-export interface ExecutionContextParams extends ContextFields {
-  currentStep: StepExecution;
-}
-
+/**
+ * Parameters for beginFinalizationStep that initializes the finalizeStep of
+ * an execution.
+ */
 export interface FinalizeParams {
   name: string;
   status: StepStatus;
@@ -98,10 +98,21 @@ export type AtomCollection = Record<string, any>;
  * Is provided as input when a step is initiated, and stored as its output when
  * finalized.
  */
-export interface ExecutionContext<Payload> extends ContextFields {
-  state: ContextStatus;
+export interface ExecutionContext<Payload> {
+  origin: OriginId;
+  lane: Lane;
 
   steps: StepExecution[];
+  payload: Payload;
+  currentStep: StepExecution | null;
+
+  initialStep?: InitialStepExecution;
+  finalizeStep?: FinalizeStepExecution;
+
+  metadata: Record<string, any>;
+
+  inputTopic: string;
+  outputTopic?: string;
 
   atoms(): AtomCollection;
   atom(name: string): any;
@@ -118,6 +129,11 @@ export interface ExecutionContext<Payload> extends ContextFields {
    * @returns self to allow chaining calls.
    */
   addJournalEntry(entry: MetaJournalEntry): ExecutionContext<Payload>;
+
+  /**
+   * Fork the execution context to a new lane.
+   */
+  fork(lane: Lane): ExecutionContext<Payload>;
 
   /**
    * Enter the finalization step of the execution.

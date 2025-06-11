@@ -63,6 +63,7 @@ export class HodrRoute extends AbstractInput<HttpRequest> {
       output: request,
       startedAt: Date.now(),
       state: 'pending',
+      forks: [],
     };
   }
 
@@ -104,8 +105,8 @@ export class HodrRoute extends AbstractInput<HttpRequest> {
     );
 
     exCtx.inputTopic = request.uri;
-    exCtx.initialStep.state = 'finalized';
-    exCtx.initialStep.finishedAt = Date.now();
+    exCtx.initialStep!.state = 'finalized';
+    exCtx.initialStep!.finishedAt = Date.now();
 
     let error: HodrError | null = null;
 

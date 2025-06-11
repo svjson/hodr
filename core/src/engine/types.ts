@@ -1,5 +1,5 @@
 import { ExecutionContext } from '../context';
-import { HttpClient, RequestParameters } from '../destination';
+import { HttpClient, HttpStatusCode, RequestParameters } from '../destination';
 import { InternalStatusErrorCode, Usable } from '../lane/types';
 import { HttpStatusPattern } from './validate';
 
@@ -21,6 +21,7 @@ export interface StepExecution {
   metadata: StepMetadata;
   startedAt: number;
   finishedAt?: number;
+  forks: StepExecution[][];
 }
 
 /**
@@ -104,7 +105,7 @@ export interface ExtractionMap {
 /**
  * Directive for status mapping
  */
-export type StatusCondEntry = [HttpStatusPattern, number];
+export type StatusCondEntry = [HttpStatusPattern, HttpStatusCode];
 export type StatusCondMap = StatusCondEntry[];
 
 export interface Validator extends Usable {

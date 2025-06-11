@@ -1,54 +1,10 @@
 import { HttpRequest } from '@hodr/core';
 import { describe, expect, it } from 'vitest';
-import { HodrContext } from '../../src/context/context';
 import { TransformStep } from '../../src/lane/step';
-import { Hodr } from '../../src/types';
+import { makeDummyContext } from '../fixture';
 
 type Stuff = { type: string };
 type StuffCollection = { stuff: Stuff[] };
-
-const makeDummyContext = <Payload>(params: any) => {
-  return new HodrContext<Payload>({
-    origin: params.origin ?? {
-      name: 'sharks',
-      input: 'batteries',
-      variant: 'tanks',
-    },
-    lane: params.lane ?? {
-      root: function (): Hodr {
-        throw new Error('Function not implemented.');
-      },
-      steps: [],
-    },
-    payload: params.payload,
-    initialStep: params.initialStep ?? {
-      type: 'initial',
-      name: '',
-      state: 'finalized',
-      input: undefined,
-      metadata: {
-        input: {},
-        output: {},
-        journal: [],
-      },
-      startedAt: 0,
-    },
-    currentStep: params.currentStep ?? {
-      name: '',
-      state: 'pending',
-      input: undefined,
-      metadata: {
-        input: {},
-        output: {},
-        journal: [],
-      },
-      startedAt: 0,
-    },
-    finalizeStep: params.finalizeStep ?? null,
-    metadata: params.metadata ?? {},
-    inputTopic: params.inputTopic ?? 'things',
-  });
-};
 
 describe('TransformStep', () => {
   it('should accept a function taking only a payload', async () => {

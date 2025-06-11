@@ -1,4 +1,4 @@
-import { HttpMethod } from '../destination';
+import { HttpMethod, HttpRequest } from '../destination';
 import { GenericLaneBuilder, Input } from '../lane';
 import { Hodr } from '../types';
 import { HodrRoute } from './route';
@@ -38,27 +38,27 @@ export class DefaultHodrRouter implements HodrRouter {
     return this;
   }
 
-  get(path: string): GenericLaneBuilder {
+  get(path: string): GenericLaneBuilder<HttpRequest> {
     return this._addRoute('GET', path);
   }
 
-  post(path: string): GenericLaneBuilder {
+  post(path: string): GenericLaneBuilder<HttpRequest> {
     return this._addRoute('POST', path);
   }
 
-  put(path: string): GenericLaneBuilder {
+  put(path: string): GenericLaneBuilder<HttpRequest> {
     return this._addRoute('PUT', path);
   }
 
-  patch(path: string): GenericLaneBuilder {
+  patch(path: string): GenericLaneBuilder<HttpRequest> {
     return this._addRoute('PATCH', path);
   }
 
-  delete(path: string): GenericLaneBuilder {
+  delete(path: string): GenericLaneBuilder<HttpRequest> {
     return this._addRoute('DELETE', path);
   }
 
-  private _addRoute(method: HttpMethod, path: string): GenericLaneBuilder {
+  private _addRoute(method: HttpMethod, path: string): GenericLaneBuilder<HttpRequest> {
     const lane = { root: this.root, steps: [] };
     const route = new HodrRoute(
       this.root,

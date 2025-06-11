@@ -1,5 +1,6 @@
 export {
   AtomCollection,
+  BaseExecutionContextParams,
   ContextStatus,
   EndStateStatus,
   ExecutionContextParams,

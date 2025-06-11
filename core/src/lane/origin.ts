@@ -50,7 +50,7 @@ export class ModuleOrigin implements Origin {
     return Object.values(this.functions);
   }
 
-  function(name: string): GenericLaneBuilder {
+  function<Payload = any>(name: string): GenericLaneBuilder<Payload> {
     const lane = { root: this.root, steps: [] };
     const func = new FunctionInput(this.root, this.name, name, lane);
     this.functions[name] = func;
@@ -95,6 +95,7 @@ export class FunctionInput extends AbstractInput<any> {
       startedAt: Date.now(),
       finishedAt: Date.now(),
       state: 'finalized',
+      forks: [],
     };
   }
 
@@ -118,6 +119,6 @@ export class FunctionInput extends AbstractInput<any> {
       throw thrown;
     }
 
-    return ctx.payload;
+    return ctx.payload as unknown as R;
   }
 }

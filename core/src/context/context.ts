@@ -8,6 +8,7 @@ import {
 import type { Lane } from '../lane';
 import type {
   AtomCollection,
+  BaseExecutionContextParams,
   ContextStatus,
   ExecutionContext,
   ExecutionContextParams,
@@ -15,35 +16,37 @@ import type {
   OriginId,
 } from './types';
 
-export class HodrContext<Payload = unknown> implements ExecutionContext<Payload> {
-  origin!: OriginId;
+/**
+ * Base class for execution contexts. This class provides the basic implementation
+ * for both main contexts and forked-off sub-contexts.
+ */
+export abstract class BaseContext<Payload = unknown>
+  implements ExecutionContext<Payload>
+{
+  private _atoms: AtomCollection = {};
 
-  state: ContextStatus = 'running';
-
+  origin: OriginId;
   lane: Lane;
   steps: StepExecution[] = [];
-  initialStep!: InitialStepExecution;
-  currentStep: StepExecution | null;
+
+  state: ContextStatus = 'running';
+  currentStep: StepExecution | null = null;
   finalizeStep?: FinalizeStepExecution | undefined;
 
-  payload?: Payload;
-
-  private _atoms: AtomCollection = {};
-  metadata: Record<string, any> = {};
-
-  inputTopic!: string;
+  inputTopic: string = '';
   outputTopic?: string | undefined;
+  metadata: Record<string, any>;
 
-  constructor(params: ExecutionContextParams) {
+  payload: Payload;
+
+  constructor(params: BaseExecutionContextParams<Payload>) {
+    this._atoms = params.atoms || {};
     this.origin = params.origin;
     this.lane = params.lane;
-    this.initialStep = params.initialStep;
-    this.currentStep = params.currentStep;
+    this.currentStep = params.currentStep ?? null;
     this.finalizeStep = params.finalizeStep;
-    this.payload = params.payload;
-    this.metadata = params.metadata;
-    this.inputTopic = params.inputTopic;
-    this.outputTopic = params.outputTopic;
+    this.payload = params.payload as Payload;
+    this.metadata = params.metadata ?? {};
   }
 
   atoms(): AtomCollection {
@@ -59,6 +62,12 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
     return this;
   }
 
+  fork(lane: Lane): ExecutionContext<Payload> {
+    const fork = new ExecutionSubContext<Payload>(this, lane);
+    this.currentStep!.forks.push(fork.steps);
+    return fork;
+  }
+
   beginFinalizationStep(params: FinalizeParams): FinalizeStepExecution {
     this.finalizeStep = {
       type: 'finalize',
@@ -71,6 +80,7 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
       },
       state: params.status,
       startedAt: Date.now(),
+      forks: [],
     };
     this.currentStep = this.finalizeStep!;
     return this.finalizeStep!;
@@ -84,5 +94,38 @@ export class HodrContext<Payload = unknown> implements ExecutionContext<Payload>
 
     this.finalizeStep!.finishedAt = Date.now();
     this.currentStep = null;
+  }
+}
+
+export class HodrContext<Payload = unknown> extends BaseContext<Payload> {
+  initialStep: InitialStepExecution;
+
+  constructor(params: ExecutionContextParams<Payload>) {
+    super({
+      origin: params.origin,
+      lane: params.lane,
+      finalizeStep: params.finalizeStep,
+      payload: params.payload,
+      atoms: {},
+      currentStep: params.currentStep,
+      metadata: params.metadata,
+    });
+
+    this.initialStep = params.initialStep;
+    this.inputTopic = params.inputTopic ?? '';
+    this.outputTopic = params.outputTopic;
+  }
+}
+
+class ExecutionSubContext<Payload = unknown> extends BaseContext<Payload> {
+  constructor(parent: ExecutionContext<Payload>, lane: Lane) {
+    super({
+      atoms: parent.atoms(),
+      origin: parent.origin,
+      payload: parent.payload,
+      lane: lane,
+      metadata: {},
+      currentStep: undefined,
+    });
   }
 }
