@@ -132,7 +132,7 @@ export interface Usable {
   __type: UsableType;
 }
 
-export type ExpectPredicateFunction<I> = (
+export type EnsurePredicateFunction<I> = (
   payload: I,
   ctx: ExecutionContext<I>,
   atoms: AtomCollection

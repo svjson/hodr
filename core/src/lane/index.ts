@@ -8,7 +8,7 @@
 export type {
   Destination,
   DestinationBuilder,
-  ExpectPredicateFunction,
+  EnsurePredicateFunction,
   HodrStep,
   Input,
   InternalStatusClientErrorCode,

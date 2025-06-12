@@ -5,7 +5,6 @@ import {
   testRouteAdapter,
   getLastExecution,
   setupTestDestination,
-  dumpLastExecution,
 } from '@hodr/testkit';
 
 type Comment = {
@@ -25,7 +24,7 @@ describe('Route ExecutionContext atoms', () => {
     router
       .delete('/comments/:targetType/thread/:targetId/:commentId')
       .httpDelete('test-destination', '/comments/:targetType/thread/:targetId/:commentId')
-      .expectHttpSuccess();
+      .ensureHttpSuccess();
 
     // When  //
     const testCtx = makeRequestContext({
@@ -119,20 +118,20 @@ describe('Route ExecutionContext atoms', () => {
       router
         .delete('/comments/:targetType/thread/:targetId/:commentId')
         .httpGet('test-destination', '/comments/:targetType/thread/:targetId')
-        .expectHttpSuccess()
+        .ensureHttpSuccess()
 
         .extractResponseBody('content.comments')
         .transform((comments, _, { commentId }) =>
           comments.find((c: Comment) => c.id === Number(commentId))
         )
-        .expectValue('resource-not-found')
-        .expect((c, _, { account }) => c.authorId === account.name, 'unauthorized')
+        .ensureValue('resource-not-found')
+        .ensure((c, _, { account }) => c.authorId === account.name, 'unauthorized')
 
         .httpDelete(
           'test-destination',
           '/comments/:targetType/thread/:targetId/:commentId'
         )
-        .expectHttpSuccess();
+        .ensureHttpSuccess();
 
       // When  //
       const testCtx = makeRequestContext({
@@ -217,18 +216,18 @@ describe('Route ExecutionContext atoms', () => {
       router
         .delete('/comments/:targetType/thread/:targetId/:commentId')
         .httpGet('test-destination', '/comments/:targetType/thread/:targetId')
-        .expectHttpSuccess()
+        .ensureHttpSuccess()
 
         .extractResponseBody('content')
         .extract('comments[id=#commentId]')
-        .expectValue('resource-not-found')
-        .expect('authorId=account.name', 'unauthorized')
+        .ensureValue('resource-not-found')
+        .ensure('authorId=account.name', 'unauthorized')
 
         .httpDelete(
           'test-destination',
           '/comments/:targetType/thread/:targetId/:commentId'
         )
-        .expectHttpSuccess();
+        .ensureHttpSuccess();
 
       // When  //
       const testCtx = makeRequestContext({

@@ -16,9 +16,9 @@ declare const chain: GenericLaneBuilder<NamedThing>;
 const r1 = chain
   .transform((thing) => thing.name)
   .httpGet('users', '/:id')
-  .expectHttpOk()
+  .ensureHttpOk()
   .transform((res) => ({ profile: res.body }))
-  .expectValue('internal-error');
+  .ensureValue('internal-error');
 
 /** Type assertions */
 type R1 = typeof r1;
@@ -28,7 +28,7 @@ type Test1 = Assert<R1, ExpectedR1>;
 
 // --- You can also isolate and test intermediate steps ---
 
-const afterHttp = chain.httpGet('users', '/:id').expectHttpStatus(200);
+const afterHttp = chain.httpGet('users', '/:id').ensureHttpStatus(200);
 
 type StepType = typeof afterHttp;
 // Hover here to confirm: HttpResponseLaneBuilder<HttpResponse, GenericLaneBuilder<...>>

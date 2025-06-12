@@ -271,7 +271,7 @@ _ // ...
   .httpGet('core-service', '/api/:targetType/thread/:targetId', {
     parameters: 'threadId'
   })
-  .expectStatus(200, 404)
+  .ensureStatus(200, 404)
 
   // ...
 ```
@@ -512,7 +512,7 @@ immediately on its own lane. The rest should refer to and delegate to re-usable 
       [409, { statusCode: 409, code: 'conflict', message: 'Listing status may not be updated further.' },
       [500, { statusCode: 500, code: 'generic', message: 'The server is broken, on fire or just refusing to cooperate.' },
     ])
-    .expectStatus(200, 204)
+    .ensureStatus(200, 204)
     .extract('content')
     .log('info', 'Listing {listingId} updated to status "{status}"')
 ```

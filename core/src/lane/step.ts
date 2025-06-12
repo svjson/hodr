@@ -19,7 +19,7 @@ import {
 import { mapStatusCode } from '../engine/transform';
 import { Hodr } from '../types';
 import {
-  ExpectPredicateFunction,
+  EnsurePredicateFunction,
   HodrStep,
   InternalStatusErrorCode,
   Lane,
@@ -129,16 +129,16 @@ export class TransformStep<I, O> implements HodrStep<I, O> {
   }
 }
 
-/** Step for enforcing an arbitrary expectation by raising an error if not met */
-export class ExpectStep<T> implements HodrStep<T, T> {
+/** Step for enforcing an arbitrary condition by raising an error if not met */
+export class EnsureStep<T> implements HodrStep<T, T> {
   name = 'expect';
   internalErrorCode: InternalStatusErrorCode;
   httpErrorCode: HttpStatusErrorCode;
-  predicate: ExpectPredicateFunction<T>;
+  predicate: EnsurePredicateFunction<T>;
 
   constructor(
     private root: () => Hodr,
-    predicate: ExpectPredicateFunction<T> | string,
+    predicate: EnsurePredicateFunction<T> | string,
     private errorCode: InternalStatusErrorCode | HttpStatusErrorCode,
     name?: string
   ) {

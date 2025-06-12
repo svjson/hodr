@@ -47,12 +47,10 @@ const setupFixture = (responses: FakeHttpClientResponses) => {
   return setupKoaFixture((app, koaRouter) => {
     hodr.use(memoryTracker({ limit: 10 }));
 
-    hodr
-      .destination('leasing')
-      .httpClient({
-        baseUrl: 'http://leasing-service.local',
-        adapter: makeFakeHttpClientPlugin(responses),
-      });
+    hodr.destination('leasing').httpClient({
+      baseUrl: 'http://leasing-service.local',
+      adapter: makeFakeHttpClientPlugin(responses),
+    });
 
     const commentsRouter = hodr.router('comments').formatError(({ error }) => {
       return {
@@ -63,7 +61,7 @@ const setupFixture = (responses: FakeHttpClientResponses) => {
     commentsRouter
       .get('/comments/:targetType/thread/:targetId')
       .httpGet('leasing', '/comments/:targetType/thread/:targetId')
-      .expectHttpOk()
+      .ensureHttpOk()
       .extractResponseBody('content');
 
     mount(koaRouter, commentsRouter);

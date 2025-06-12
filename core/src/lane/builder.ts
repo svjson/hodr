@@ -17,7 +17,7 @@ import { Hodr } from '../types';
 import { HodrDestination } from './destination';
 import {
   CallStep,
-  ExpectStep,
+  EnsureStep,
   ExtractStep,
   MapStatusCodeStep,
   ParallelStep,
@@ -27,7 +27,7 @@ import {
 } from './step';
 import type {
   DestinationBuilder,
-  ExpectPredicateFunction,
+  EnsurePredicateFunction,
   HodrStep,
   HttpClientDestinationBuilder,
   InternalStatusErrorCode,
@@ -214,43 +214,43 @@ export abstract class BaseLaneBuilder<Payload, Self extends BaseLaneBuilder<any,
   }
 
   /**
-   * Register an expect step.
+   * Register an ensure step.
    *
    * Can be used for instant bail-out whenever the conditions for a process are not met,
    * according to arbitrary business logic or system invariants.
    *
-   * @param pred - The predicate function, returning `true` if the expectation is fulfilled
+   * @param pred - The predicate function, returning `true` if the condition is satisfied
    *               or otherwise `false`.
-   @ @param errorCode - The error code to raise in case the expectation is not fulfilled.
+   @ @param errorCode - The error code to raise in case the condition is not satisfied.
    */
-  expect(
-    pred: ExpectPredicateFunction<Payload>,
+  ensure(
+    pred: EnsurePredicateFunction<Payload>,
     errorCode: InternalStatusErrorCode | HttpStatusErrorCode
   ): this;
-  expect(
+  ensure(
     expression: string,
     errorCode: InternalStatusErrorCode | HttpStatusErrorCode
   ): this;
-  expect(
-    pred: ExpectPredicateFunction<Payload> | string,
+  ensure(
+    pred: EnsurePredicateFunction<Payload> | string,
     errorCode: InternalStatusErrorCode | HttpStatusErrorCode
   ): this {
-    this.lane.steps.push(new ExpectStep(this.root, pred, errorCode));
+    this.lane.steps.push(new EnsureStep(this.root, pred, errorCode));
     return this;
   }
 
   /**
-   * Register an expect step verifying that the payload is currently not nil.
+   * Register an ensure step verifying that the payload is currently not nil.
    *
-   * Syntactic sugar for ```.expect((v) => v !== null && v !== undefined)````
+   * Syntactic sugar for ```.ensure((v) => v !== null && v !== undefined)````
    */
-  expectValue(errorCode: InternalStatusErrorCode | HttpStatusErrorCode): this {
+  ensureValue(errorCode: InternalStatusErrorCode | HttpStatusErrorCode): this {
     this.lane.steps.push(
-      new ExpectStep(
+      new EnsureStep(
         this.root,
         (v) => v !== null && v !== undefined,
         errorCode,
-        'expect-value'
+        'ensure-value'
       )
     );
     return this;
@@ -425,17 +425,17 @@ export class HttpResponseLaneBuilder<
     }) as this;
   }
 
-  expectHttpOk(): this {
+  ensureHttpOk(): this {
     this.lane.steps.push(httpStatusMatcher(200));
     return this;
   }
 
-  expectHttpSuccess(): this {
+  ensureHttpSuccess(): this {
     this.lane.steps.push(httpStatusMatcher(new HttpStatusRange(200, 220)));
     return this;
   }
 
-  expectHttpStatus(...statusPattern: HttpStatusPattern[]): this {
+  ensureHttpStatus(...statusPattern: HttpStatusPattern[]): this {
     this.lane.steps.push(httpStatusMatcher(...statusPattern));
     return this;
   }

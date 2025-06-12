@@ -54,7 +54,7 @@ describe('Route Execution', () => {
         pathParams: 'threadId',
         body: 'comment',
       })
-      .expectHttpSuccess()
+      .ensureHttpSuccess()
       .extractResponseBody('content');
 
     // When  //
@@ -92,7 +92,7 @@ describe('Route Execution', () => {
     router
       .post('/comments/:targetType/thread/:targetId')
       .httpPost('test-destination', '/comments/:targetType/thread/:targetId')
-      .expectHttpSuccess()
+      .ensureHttpSuccess()
       .extractResponseBody('content');
 
     // When  //

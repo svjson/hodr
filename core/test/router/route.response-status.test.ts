@@ -1,4 +1,4 @@
-import { HttpRequest, makeHodr, memoryTracker } from '@hodr/core';
+import { HttpRequest } from '@hodr/core';
 import {
   AlwaysFailValidator,
   makeRequestContext,
@@ -64,7 +64,7 @@ describe('Route Response Status Propagation', () => {
     router
       .post('/stuff')
       .httpPost('test-destination', '/stuff')
-      .expectHttpSuccess()
+      .ensureHttpSuccess()
       .extractResponseBody('content');
 
     // When  //
@@ -99,7 +99,7 @@ describe('Route Response Status Propagation', () => {
     router
       .post('/shaky-stuff')
       .httpPost('test-destination', '/shaky-stuff')
-      .expectHttpSuccess()
+      .ensureHttpSuccess()
       .extractResponseBody('content');
 
     // When  //
@@ -134,7 +134,7 @@ describe('Route Response Status Propagation', () => {
     router
       .post('/create')
       .httpPost('test-destination', '/begin-the-story-of-creation')
-      .expectHttpSuccess()
+      .ensureHttpSuccess()
       .extractResponseBody('content');
 
     // When  //
